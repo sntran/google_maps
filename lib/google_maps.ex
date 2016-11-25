@@ -181,8 +181,9 @@ defmodule GoogleMaps do
   """
   @spec directions(waypoint(), waypoint(), keyword()) :: {:ok, map()} | {:error, error()}
   def directions(origin, destination, options \\ []) do
-    params = [origin: origin, destination: destination]
-    params = Enum.into(options, params, &transform_param/1)
+    params = options
+    |> Keyword.merge([origin: origin, destination: destination])
+    |> Enum.map(&transform_param/1)
 
     get("directions", params)
     |> case do
@@ -192,6 +193,12 @@ defmodule GoogleMaps do
     end
   end
 
+  defp transform_param({:origin, {lat, lng}}) when is_number(lat) and is_number(lng) do
+    {:origin, "#{lat},#{lng}"}
+  end
+  defp transform_param({:destination, {lat, lng}}) when is_number(lat) and is_number(lng) do
+    {:destination, "#{lat},#{lng}"}
+  end
   defp transform_param({:waypoints, "enc:" <> enc}) do
     {:waypoints, "enc:" <> enc}
   end
