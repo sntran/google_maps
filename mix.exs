@@ -33,7 +33,8 @@ defmodule GoogleMaps.Mixfile do
   defp deps do
     [
       {:poison, "~> 3.0"},
-      {:httpoison, "~> 0.10.0"}
+      {:httpoison, "~> 0.10.0"},
+      {:ex_doc, ">= 0.0.0", only: :dev}
     ]
   end
 
