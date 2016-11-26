@@ -2,21 +2,50 @@ defmodule DirectionsTest do
   use ExUnit.Case, async: true
   alias GoogleMaps, as: Maps
 
-  test "retrieves directions between two addresses" do
-    {:ok, result} = Maps.directions("Cột mốc Quốc Gia, Đất Mũi, Ngọc Hiển, Cà Mau, Vietnam", "Cột Cờ Lũng Cú, Lũng Cú, Đồng Văn, Ha Giang, Vietnam")
+  @origin "Cột mốc Quốc Gia, Đất Mũi, Ca Mau, Vietnam"
+  @destination "Cột cờ Lũng Cú, Đường lên Cột Cờ, Lũng Cú, Ha Giang, Vietnam"
+
+  test "directions between two addresses" do
+    {:ok, result} = Maps.directions(@origin, @destination)
     assert result["geocoded_waypoints"]
-    assert result["routes"]
+    assert_single_route(result)
   end
 
-  test "retrieves directions between two coordinates" do
-    {:ok, result} = Maps.directions("15.9216161,101.9985552", "15.9216161,101.9985552")
+  test "directions between two coordinates" do
+    {:ok, result} = Maps.directions("8.6069305,104.7196242", "23.363697,105.3140251")
     assert result["geocoded_waypoints"]
-    assert result["routes"]
+    assert_single_route(result)
   end
 
-  test "retrieves directions between two lat/lng tupples" do
-    {:ok, result} = Maps.directions({15.9216161,101.9985552}, {15.9216161,101.9985552})
+  test "directions between two lat/lng tupples" do
+    {:ok, result} = Maps.directions({8.6069305,104.7196242}, {23.363697,105.3140251})
     assert result["geocoded_waypoints"]
-    assert result["routes"]
+    assert_single_route(result)
+  end
+
+  test "directions with optional parameters" do
+    {:ok, result} = Maps.directions("8.6069305,104.7196242", "23.363697,105.3140251",
+                      mode: "driving",
+                      waypoints: [
+                        "10.402504,107.056638",
+                        "10.8976049,108.1020933",
+                        "11.9039022,108.3806826",
+                        "12.2595881,109.1707299",
+                        "16.0470775,108.1712141"
+                      ],
+                      alternatives: true,
+                      language: "vi",
+                      units: "metric"
+                    )
+
+    [route | _rest] = result["routes"]
+    assert route["copyrights"] === "Dữ liệu bản đồ ©2016 Google"
+    legs = route["legs"]
+    assert Enum.count(legs) > 1
+    assert String.contains?(Enum.at(legs, 1)["distance"]["text"], " km")
+  end
+
+  defp assert_single_route(%{"routes" => [route]}) do
+    assert Enum.count(route["legs"]) === 1
   end
 end
