@@ -7,7 +7,7 @@ Elixir wrapper around Google Maps APIs
 - [x] [Directions](https://developers.google.com/maps/documentation/directions/intro) - Directions between multiple locations.
 - [ ] [Distance Matrix](https://developers.google.com/maps/documentation/distance-matrix/intro) - Travel time and distance for multiple destinations.
 - [ ] [Elevation](https://developers.google.com/maps/documentation/elevation/intro) - Elevation data for any point in the world.
-- [ ] [Geocoding](https://developers.google.com/maps/documentation/geocoding/intro) - Converts between addresses and geographic coordinates.
+- [x] [Geocoding](https://developers.google.com/maps/documentation/geocoding/intro) - Converts between addresses and geographic coordinates.
 - [ ] [Place Add](https://developers.google.com/places/web-service/add-place) - Allows you to supplement the data in Google's Places database with data from your application.
 - [x] [Place Autocomplete](https://developers.google.com/places/web-service/autocomplete) - can be used to automatically fill in the name and/or address of a place as you type.
 - [ ] [Place Details](https://developers.google.com/places/web-service/details) - Returns more detailed information about a specific Place, including user reviews.
@@ -19,6 +19,7 @@ Elixir wrapper around Google Maps APIs
 ## Methods
 
 - `directions/3`
+- `geocode/2`
 - `place_autocomplete/2`
 - `place_query/2`
 
@@ -30,7 +31,7 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 
     ```elixir
     def deps do
-      [{:google_maps, "~> 0.4"}]
+      [{:google_maps, "~> 0.5"}]
     end
     ```
 
