@@ -16,6 +16,11 @@ Elixir wrapper around Google Maps APIs
 - [ ] Query Autocomplete - can be used to provide a query prediction service for text-based geographic searches, by returning suggested queries as you type.
 - [ ] Timezone - Time zone data for anywhere in the world.
 
+## Methods
+
+- `directions/3`
+- `place_autocomplete/2`
+
 ## Installation
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed as:
@@ -24,7 +29,7 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 
     ```elixir
     def deps do
-      [{:google_maps, "~> 0.2.0"}]
+      [{:google_maps, "~> 0.3.0"}]
     end
     ```
 
@@ -35,4 +40,12 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
       [applications: [:google_maps]]
     end
     ```
+  
+  3. In your application's `config/config.exs`, add:
 
+    ```elixir
+    config :google_maps, 
+      api_key: "YOUR API KEY HERE"
+    ```
+
+  Or you can use `GOOGLE_MAPS_API_KEY` system environment variable when running in `iex`.

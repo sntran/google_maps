@@ -3,6 +3,8 @@ defmodule GoogleMaps.Request do
 
   use HTTPoison.Base
 
+  @api_key Application.get_env(:google_maps, :api_key) || System.get_env("GOOGLE_MAPS_API_KEY")
+
   @doc """
   GET an endpoint with param keyword list
   """
@@ -13,10 +15,9 @@ defmodule GoogleMaps.Request do
   end
 
   # HTTPoison callbacks.
-  
   def process_url(url) do
     %{path: path, query: query} = URI.parse(url)
-    "https://maps.googleapis.com/maps/api/#{path}/json?key=AIzaSyDnPCkQMDmfgneX6juLvQ6rjBF98lyG5T0&#{query}"
+    "https://maps.googleapis.com/maps/api/#{path}/json?key=#{@api_key}&#{query}"
   end
 
   def process_response_body(body) do
