@@ -9,7 +9,7 @@ Elixir wrapper around Google Maps APIs
 - [ ] Elevation - Elevation data for any point in the world.
 - [ ] Geocoding - Converts between addresses and geographic coordinates.
 - [ ] Place Add - Allows you to supplement the data in Google's Places database with data from your application.
-- [ ] Place Autocomplete - can be used to automatically fill in the name and/or address of a place as you type.
+- [x] Place Autocomplete - can be used to automatically fill in the name and/or address of a place as you type.
 - [ ] Place Details - Returns more detailed information about a specific Place, including user reviews.
 - [ ] Place Photo - Gives you access to the millions of Place related photos stored in Google's Place database
 - [ ] Place Search - Returns a list of places based on a user's location or search string.
@@ -24,7 +24,7 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 
     ```elixir
     def deps do
-      [{:google_maps, "~> 0.1.0"}]
+      [{:google_maps, "~> 0.2.0"}]
     end
     ```
 

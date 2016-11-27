@@ -6,8 +6,7 @@ defmodule GoogleMaps do
   parameters as its own  parameters, and all optional ones in an 
   `options` keyword list.
   """
-
-  use HTTPoison.Base
+  alias GoogleMaps.{Request, Response}
 
   @typedoc """
   An address that will be geocoded and converted to latitude/longitude
@@ -33,23 +32,6 @@ defmodule GoogleMaps do
 
   @type mode :: String.t
 
-  @type status :: String.t
-
-  @type error :: HTTPoison.Error.t | status()
-
-  def process_url(url) do
-    %{path: path, query: query} = URI.parse(url)
-    "https://maps.googleapis.com/maps/api/#{path}/json?key=AIzaSyDnPCkQMDmfgneX6juLvQ6rjBF98lyG5T0&#{query}"
-  end
-
-  def process_response_body(body) do
-    body |> Poison.decode!
-  end
-
-  def get(endpoint, params) do
-    get("#{endpoint}?#{URI.encode_query(params)}")
-  end
-
   @doc ~S"""
   Retrives the directions from one point to the other.
 
@@ -71,9 +53,9 @@ defmodule GoogleMaps do
       parameter, described above.
 
   Options:
-    * `mode` (defaults to driving) — Specifies the mode of transport to
-      use when calculating directions. Valid values and other request 
-      details are specified in Travel Modes section.
+    * `mode` (defaults to "driving") — Specifies the mode of transport 
+      to use when calculating directions. Valid values and other  
+      request details are specified in Travel Modes section.
     * `waypoints`— Specifies an array of waypoints. Waypoints alter a 
       route by routing it through the specified location(s). A waypoint
       is specified as a latitude/longitude coordinate, an encoded 
@@ -157,7 +139,7 @@ defmodule GoogleMaps do
         should be longer than the actual travel time on most days, 
         though occasional days with particularly bad traffic conditions
         may exceed this value.
-      * `optimistic indicates that the returned `duration_in_traffic` 
+      * `optimistic` indicates that the returned `duration_in_traffic` 
         should be shorter than the actual travel time on most days, 
         though occasional days with particularly good traffic 
         conditions may be faster than this value.
@@ -179,35 +161,226 @@ defmodule GoogleMaps do
     * "REQUEST_DENIED"
     * "UNKNOWN_ERROR"
   """
-  @spec directions(waypoint(), waypoint(), keyword()) :: {:ok, map()} | {:error, error()}
+  @spec directions(waypoint(), waypoint(), keyword()) :: Response.t()
   def directions(origin, destination, options \\ []) do
     params = options
     |> Keyword.merge([origin: origin, destination: destination])
-    |> Enum.map(&transform_param/1)
 
-    get("directions", params)
-    |> case do
-      {:error, error} -> {:error, error}
-      {:ok, %{body: %{"status" => "OK"} = body}} -> {:ok, body}
-      {:ok, %{body: %{"status" => status}}} -> {:error, status}
-    end
+    Request.get("directions", params)
+    |> Response.wrap
   end
 
-  defp transform_param({:origin, {lat, lng}}) when is_number(lat) and is_number(lng) do
-    {:origin, "#{lat},#{lng}"}
+  @doc """
+  Automatically fill in the name and/or address of a place.
+
+  The Place Autocomplete service is a web service that returns place 
+  predictions in response to an HTTP request. The request specifies a 
+  textual search string and optional geographic bounds. The service 
+  can be used to provide autocomplete functionality for text-based 
+  geographic searches, by returning places such as businesses, 
+  addresses and points of interest as a user types.
+
+  The Place Autocomplete service can match on full words as well as 
+  substrings. Applications can therefore send queries as the user 
+  types, to provide on-the-fly place predictions.
+
+  The returned predictions are designed to be presented to the user to 
+  aid them in selecting the desired place. You can send a Place Details
+  request for more information about any of the places returned.
+
+  ## Args:
+    * `input` — The text string on which to search. The Place 
+      Autocomplete service will return candidate matches based on this 
+      string and order results based on their perceived relevance.
+
+  ## Options:
+    * `offset` — The position, in the input term, of the last character
+      that the service uses to match predictions. For example, if the 
+      input is 'Google' and the `offset` is 3, the service will match 
+      on 'Goo'. The string determined by the offset is matched against 
+      the first word in the input term only. For example, if the input 
+      term is 'Google abc' and the `offset` is 3, the service will 
+      attempt to match against 'Goo abc'. If no offset is supplied, the
+      service will use the whole term. The offset should generally be 
+      set to the position of the text caret.
+    * `location` — The point around which you wish to retrieve place 
+      information. Must be specified as *latitude,longitude*.
+    * `radius` — The distance (in meters) within which to return place 
+      results. Note that setting a `radius` biases results to the 
+      indicated area, but may not fully restrict results to the 
+      specified area. See Location Biasing below.
+    * `language` — The language code, indicating in which language the 
+      results should be returned, if possible. Searches are also biased
+      to the selected language; results in the selected language may be
+      given a higher ranking. See the [list of supported languages](https://developers.google.com/maps/faq#languagesupport) 
+      and their codes. Note that we often update supported languages so
+      this list may not be exhaustive. If language is not supplied, the
+      Place Autocomplete service will attempt to use the native 
+      language of the domain from which the request is sent.
+    * `types` — The types of place results to return. See Place Types 
+      below. If no type is specified, all types will be returned.
+    * `components` — A grouping of places to which you would like to 
+      restrict your results. Currently, you can use `components` to 
+      filter by country. The country must be passed as a two character,
+      ISO 3166-1 Alpha-2 compatible country code. For example: 
+      `components=country:fr` would restrict your results to places 
+      within France.
+
+  ## Location Biasing
+  You may bias results to a specified circle by passing a `location` &
+  a `radius` parameter. This instructs the Place Autocomplete service
+  to *prefer* showing results within that circle. Results outside of
+  the defined area may still be displayed. You can use the `components`
+  parameter to filter results to show only those places within a 
+  specified country.
+
+  **Note**: If you do not supply the location and radius, the API will 
+  attempt to detect the server's location from their IP address, and 
+  will bias the results to that location. If you would prefer to have 
+  no location bias, set the location to '0,0' and radius to '20000000' 
+  (20 thousand kilometers), to encompass the entire world.
+
+  *Tip*: Establishment results generally do not rank highly enough to 
+  show in results when the search area is large. If you want 
+  establishments to appear in mixed establishment/geocode results, you 
+  can specify a smaller radius. Alternatively, use `types=establishment`
+  to restrict results to establishments only.
+
+  ## Place Types
+
+  You may restrict results from a Place Autocomplete request to be of 
+  a certain type by passing a `types` parameter. The parameter specifies 
+  a type or a type collection, as listed in the supported types below. 
+  If nothing is specified, all types are returned. In general only a 
+  single type is allowed. The exception is that you can safely mix the
+  `geocode` and `establishment` types, but note that this will have the
+  same effect as specifying no types. The supported types are:
+
+    * `geocode` instructs the Place Autocomplete service to return only 
+      geocoding results, rather than business results. Generally, you 
+      use this request to disambiguate results where the location 
+      specified may be indeterminate.
+    * `address` instructs the Place Autocomplete service to return only
+      geocoding results with a precise address. Generally, you use this
+      request when you know the user will be looking for a fully 
+      specified address.
+    * `establishment` instructs the Place Autocomplete service to 
+      return only business results.
+    * the `(regions)` type collection instructs the Places service to 
+      return any result matching the following types:
+      * `locality`
+      * `sublocality`
+      * `postal_code`
+      * `country`
+      * `administrative_area_level_1`
+      * `administrative_area_level_2`
+    * the `(cities)` type collection instructs the Places service to 
+      return results that match `locality` or 
+      `administrative_area_level_3`.
+
+  ## Returns
+
+  This function returns `{:ok, body}` if the request is successful, and
+  Google returns data. The returned body is a map contains two root
+  elements:
+    * `status` contains metadata on the request.
+    * `predictions` contains an array of places, with information about
+      the place. See Place Autocomplete Results for information about 
+      these results. The Google API returns up to 5 results.
+
+  Of particular interest within the results are the place_id elements, 
+  which can be used to request more specific details about the place 
+  via a separate query. See Place Details Requests.
+
+  It returns `{:error, error}` when there is HTTP
+  errors, or `{:error, status}` when the request is successful, but 
+  Google returns status codes different than "OK", i.e.:
+    * "NOT_FOUND" 
+    * "ZERO_RESULTS" 
+    * "MAX_WAYPOINTS_EXCEEDED" 
+    * "INVALID_REQUEST"
+    * "OVER_QUERY_LIMIT"
+    * "REQUEST_DENIED"
+    * "UNKNOWN_ERROR"
+
+  ## Place Autocomplete Results
+
+  Each prediction result contains the following fields:
+
+    * `description` contains the human-readable name for the returned 
+      result. For `establishment` results, this is usually the business
+      name.
+    * `place_id` is a textual identifier that uniquely identifies a 
+      place. To retrieve information about the place, pass this 
+      identifier in the `placeId` field of a Google Places API request.
+    * `terms` contains an array of terms identifying each section of 
+      the returned description (a section of the description is
+      generally terminated with a comma). Each entry in the array has 
+      a value field, containing the text of the term, and an `offset` 
+      field, defining the start position of this term in the 
+      description, measured in Unicode characters.
+    * `types` contains an array of types that apply to this place. For 
+      example: [ "political", "locality" ] or [ "establishment", 
+      "geocode" ].
+    * `matched_substrings` contains an array with offset value and 
+      length. These describe the location of the entered term in the 
+      prediction result text, so that the term can be highlighted if 
+      desired.
+
+  **Note**: The Place Autocomplete response does not include the `scope` 
+  or `alt_ids` fields that you may see in search results or place 
+  details. This is because Autocomplete returns only Google-scoped 
+  place IDs. It does not return app-scoped place IDs that have not yet 
+  been accepted into the Google Places database. For more details about 
+  Google-scoped and app-scoped place IDs, see the documentation on 
+  [adding places](https://developers.google.com/places/web-service/add-place).
+
+  ## Examples
+    
+      # Searching for "Paris"
+      iex> {:ok, result} = GoogleMaps.place_autocomplete("Paris")
+      iex> Enum.count(result["predictions"])
+      5
+      iex> [paris | _rest] = result["predictions"]
+      iex> paris["description"]
+      "Paris, France"
+      iex> paris["place_id"]
+      "ChIJD7fiBh9u5kcRYJSMaMOCCwQ"
+      iex> paris["types"]
+      [ "locality", "political", "geocode" ]
+
+      # Establishments containing the string "Amoeba" within an area 
+      # centered in San Francisco, CA:
+      iex> {:ok, result} = GoogleMaps.place_autocomplete("Amoeba", [
+      ...>   types: "establishment",
+      ...>   location: "37.76999,-122.44696",
+      ...>   radius: 500
+      ...> ])
+      iex> Enum.count(result["predictions"])
+      5
+
+      # Addresses containing "Vict" with results in French:
+      iex> {:ok, result} = GoogleMaps.place_autocomplete("Vict", [
+      ...>   types: "geocode",
+      ...>   language: "fr"
+      ...> ])
+      iex> Enum.count(result["predictions"])
+      5
+
+      # Cities containing "Vict" with results in Brazilian Portuguese:
+      iex> {:ok, result} = GoogleMaps.place_autocomplete("Vict", [
+      ...>   types: "(cities)",
+      ...>   language: "pt_BR"
+      ...> ])
+      iex> Enum.count(result["predictions"])
+      5
+  """
+  @spec place_autocomplete(String.t, keyword()) :: Response.t()
+  def place_autocomplete(input, options \\ []) do
+    params = options
+    |> Keyword.merge([input: input])
+    
+    Request.get("place/autocomplete", params)
+    |> Response.wrap
   end
-  defp transform_param({:destination, {lat, lng}}) when is_number(lat) and is_number(lng) do
-    {:destination, "#{lat},#{lng}"}
-  end
-  defp transform_param({:waypoints, "enc:" <> enc}) do
-    {:waypoints, "enc:" <> enc}
-  end
-  defp transform_param({:waypoints, waypoints}) when is_list(waypoints) do
-    transform_param({:waypoints, Enum.join(waypoints, "|")})
-  end
-  defp transform_param({:waypoints, waypoints}) do
-    # @TODO: Encode the waypoints into encoded polyline.
-    {:waypoints, "optimize:true|#{waypoints}"}
-  end
-  defp transform_param(param), do: param
 end
