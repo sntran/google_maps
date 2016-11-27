@@ -421,6 +421,94 @@ defmodule GoogleMaps do
   end
 
   @doc """
+  Provide a query prediction for text-based geographic searches.
+
+  The Query Autocomplete service allows you to add on-the-fly 
+  geographic query predictions to your application. Instead of 
+  searching for a specific location, a user can type in a categorical 
+  search, such as "pizza near New York" and the service responds with 
+  a list of suggested queries matching the string. As the Query 
+  Autocomplete service can match on both full words and substrings, 
+  applications can send queries as the user types to provide 
+  on-the-fly predictions.
+
+  ## Args:
+    * `input` — The text string on which to search. The Places 
+      service will return candidate matches based on this 
+      string and order results based on their perceived relevance.
+
+  ## Options:
+    * `offset` — The character position in the input term at which the 
+      service uses text for predictions. For example, if the input is
+      'Googl' and the completion point is 3, the service will match 
+      on 'Goo'. The `offset` should generally be set to the position of
+      the text caret. If no offset is supplied, the service will use 
+      the entire term.
+    * `location` — The point around which you wish to retrieve place 
+      information. Must be specified as *latitude,longitude*.
+    * `radius` — The distance (in meters) within which to return place 
+      results. Note that setting a `radius` biases results to the 
+      indicated area, but may not fully restrict results to the 
+      specified area. See Location Biasing below.
+    * `language` — The language code, indicating in which language the 
+      results should be returned, if possible. Searches are also biased
+      to the selected language; results in the selected language may be
+      given a higher ranking. See the [list of supported languages](https://developers.google.com/maps/faq#languagesupport) 
+      and their codes. Note that we often update supported languages so
+      this list may not be exhaustive. If language is not supplied, the
+      Places service will attempt to use the native language of the 
+      domain from which the request is sent.
+
+  ## Returns
+
+  This function returns `{:ok, body}` if the request is successful, and
+  Google returns data. The returned body is a map contains two root
+  elements:
+    * `status` contains metadata on the request.
+    * `predictions` contains an array of query predictions.
+
+  Each prediction result contains the following fields:
+
+    * `description` contains the human-readable name for the returned 
+      result. For `establishment` results, this is usually the business
+      name.
+    * `terms` contains an array of terms identifying each section of 
+      the returned description (a section of the description is 
+      generally terminated with a comma). Each entry in the array has 
+      a `value` field, containing the text of the term, and an `offset`
+      field, defining the start position of this term in the 
+      description, measured in Unicode characters.
+    * `matched_substring` contains an `offset` value and a `length`. 
+      These describe the location of the entered term in the prediction
+      result text, so that the term can be highlighted if desired.
+
+  Note that some of the predictions may be places, and the `place_id`,
+  `reference` and `type` fields will be included with those 
+  predictions. See Place Autocomplete Results for information about 
+  these results.
+
+  ## Examples
+      
+      # A request "Pizza near Par":
+      iex> {:ok, result} = GoogleMaps.place_query("Pizza near Par")
+      iex> is_list(result["predictions"])
+      true
+      
+      # A request "Pizza near Par", with results in French:
+      iex> {:ok, result} = GoogleMaps.place_query("Pizza near Par", [language: "fr"])
+      iex> is_list(result["predictions"])
+      true
+  """
+  @spec place_query(String.t, keyword()) :: Response.t()
+  def place_query(input, options \\ []) do
+    params = options
+    |> Keyword.merge([input: input])
+    
+    Request.get("place/queryautocomplete", params)
+    |> Response.wrap
+  end
+
+  @doc """
   Direct request to Google Maps API endpoint.
 
   Instead of relying on the functionality this module provides, you can
@@ -449,6 +537,10 @@ defmodule GoogleMaps do
       iex> paris["types"]
       [ "locality", "political", "geocode" ]
 
+      # A request "Pizza near Par":
+      iex> {:ok, result} = GoogleMaps.get("place/queryautocomplete", [input: "Pizza near Par"])
+      iex> is_list(result["predictions"])
+      true
   """
   @spec get(String.t, keyword()) :: Response.t()
   def get(endpoint, params) do
