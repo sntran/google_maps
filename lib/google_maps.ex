@@ -160,6 +160,42 @@ defmodule GoogleMaps do
     * "OVER_QUERY_LIMIT"
     * "REQUEST_DENIED"
     * "UNKNOWN_ERROR"
+
+  ## Examples
+
+      # Driving directions from Toronto, Ontario to Montreal, Quebec.
+      iex> {:ok, result} = GoogleMaps.directions("Toronto", "Montreal")
+      iex> [route] = result["routes"]
+      iex> route["bounds"]
+      %{"northeast" => %{"lat" => 45.5017123, "lng" => -73.56518009999999}, "southwest" => %{"lat" => 43.6533103, "lng" => -79.3827675}}
+
+      # Directions for a scenic bicycle journey that avoids major highways.
+      iex> {:ok, result} = GoogleMaps.directions("Toronto", "Montreal", [
+      ...>   avoid: "highway",
+      ...>   mode: "bicycling"
+      ...> ])
+      iex> [route] = result["routes"]
+      iex> route["bounds"]
+      %{"northeast" => %{"lat" => 45.5017123, "lng" => -73.56220110000001}, "southwest" => %{"lat" => 43.6513486, "lng" => -79.38306299999999}}
+
+      # Transit directions from Brooklyn, New York to Queens, New York.
+      # The request does not specify a `departure_time`, so the 
+      # departure time defaults to the current time:
+      iex> {:ok, result} = GoogleMaps.directions("Brooklyn", "Queens", [
+      ...>   mode: "transit"
+      ...> ])
+      iex> Enum.count(result["routes"])
+      1
+
+      # Driving directions from Glasgow, UK to Perth, UK using place IDs.
+      iex> {:ok, result} = GoogleMaps.directions("place_id:ChIJ685WIFYViEgRHlHvBbiD5nE", "place_id:ChIJA01I-8YVhkgRGJb0fW4UX7Y")
+      iex> Enum.count(result["routes"])
+      1
+
+      # Same driving directions above but using place ID tuples.
+      iex> {:ok, result} = GoogleMaps.directions({:place_id, "ChIJ685WIFYViEgRHlHvBbiD5nE"}, {:place_id, "ChIJA01I-8YVhkgRGJb0fW4UX7Y"})
+      iex> Enum.count(result["routes"])
+      1
   """
   @spec directions(waypoint(), waypoint(), keyword()) :: Response.t()
   def directions(origin, destination, options \\ []) do
@@ -381,6 +417,42 @@ defmodule GoogleMaps do
     |> Keyword.merge([input: input])
     
     Request.get("place/autocomplete", params)
+    |> Response.wrap
+  end
+
+  @doc """
+  Direct request to Google Maps API endpoint.
+
+  Instead of relying on the functionality this module provides, you can
+  use this function to make direct request to the Google Maps API.
+
+  It takes an endpoint string, and a keyword list of parameters.
+
+  ## Examples
+
+      iex> {:ok, result} = GoogleMaps.get("directions", [
+      ...>   origin: "Disneyland",
+      ...>   destination: "Universal Studios Hollywood"
+      ...> ])
+      iex> [route] = result["routes"]
+      iex> route["bounds"]
+      %{\"northeast\" => %{\"lat\" => 34.1385355, \"lng\" => -117.9143879}, \"southwest\" => %{\"lat\" => 33.8068768, \"lng\" => -118.352977}}
+
+      iex> {:ok, result} = GoogleMaps.get("place/autocomplete", [input: "Paris"])
+      iex> Enum.count(result["predictions"])
+      5
+      iex> [paris | _rest] = result["predictions"]
+      iex> paris["description"]
+      "Paris, France"
+      iex> paris["place_id"]
+      "ChIJD7fiBh9u5kcRYJSMaMOCCwQ"
+      iex> paris["types"]
+      [ "locality", "political", "geocode" ]
+
+  """
+  @spec get(String.t, keyword()) :: Response.t()
+  def get(endpoint, params) do
+    Request.get(endpoint, params)
     |> Response.wrap
   end
 end

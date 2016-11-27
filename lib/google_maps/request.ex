@@ -26,21 +26,33 @@ defmodule GoogleMaps.Request do
 
   # Helpers
   
-  defp transform_param({:origin, {lat, lng}}) when is_number(lat) and is_number(lng) do
-    {:origin, "#{lat},#{lng}"}
+  defp transform_param({type, {lat, lng}}) 
+  when type in [:origin, :destination] 
+  and is_number(lat) 
+  and is_number(lng) 
+  do
+    {type, "#{lat},#{lng}"}
   end
-  defp transform_param({:destination, {lat, lng}}) when is_number(lat) and is_number(lng) do
-    {:destination, "#{lat},#{lng}"}
+
+  defp transform_param({type, {:place_id, place_id}}) 
+  when type in [:origin, :destination] 
+  do
+    {type, "place_id:#{place_id}"}
   end
+
   defp transform_param({:waypoints, "enc:" <> enc}) do
     {:waypoints, "enc:" <> enc}
   end
-  defp transform_param({:waypoints, waypoints}) when is_list(waypoints) do
+
+  defp transform_param({:waypoints, waypoints}) 
+  when is_list(waypoints) do
     transform_param({:waypoints, Enum.join(waypoints, "|")})
   end
+
   defp transform_param({:waypoints, waypoints}) do
     # @TODO: Encode the waypoints into encoded polyline.
     {:waypoints, "optimize:true|#{waypoints}"}
   end
+  
   defp transform_param(param), do: param
 end
