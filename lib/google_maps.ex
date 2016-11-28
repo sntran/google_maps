@@ -30,6 +30,8 @@ defmodule GoogleMaps do
   """
   @type waypoint :: address() | coordinate() | place_id()
 
+  @type options :: keyword()
+
   @type mode :: String.t
 
   @doc """
@@ -209,7 +211,7 @@ defmodule GoogleMaps do
       iex> Enum.count(result["routes"])
       1
   """
-  @spec directions(waypoint(), waypoint(), keyword()) :: Response.t()
+  @spec directions(waypoint(), waypoint(), options()) :: Response.t()
   def directions(origin, destination, options \\ []) do
     params = options
     |> Keyword.merge([origin: origin, destination: destination])
@@ -501,7 +503,7 @@ defmodule GoogleMaps do
       iex> result["formatted_address"]
       "277 Bedford Ave, Brooklyn, NY 11211, USA"
   """
-  @spec geocode(map() | String.t, keyword()) :: Response.t()
+  @spec geocode(map() | String.t | coordinate() | place_id, options()) :: Response.t()
   def geocode(input, options \\ [])
 
   # Reverse geo-coding
@@ -749,7 +751,7 @@ defmodule GoogleMaps do
       iex> Enum.count(result["predictions"])
       5
   """
-  @spec place_autocomplete(String.t, keyword()) :: Response.t()
+  @spec place_autocomplete(String.t, options()) :: Response.t()
   def place_autocomplete(input, options \\ []) do
     params = options
     |> Keyword.merge([input: input])
@@ -819,7 +821,7 @@ defmodule GoogleMaps do
       a `value` field, containing the text of the term, and an `offset`
       field, defining the start position of this term in the 
       description, measured in Unicode characters.
-      
+
     * `matched_substring` contains an `offset` value and a `length`. 
       These describe the location of the entered term in the prediction
       result text, so that the term can be highlighted if desired.
@@ -841,7 +843,7 @@ defmodule GoogleMaps do
       iex> is_list(result["predictions"])
       true
   """
-  @spec place_query(String.t, keyword()) :: Response.t()
+  @spec place_query(String.t, options()) :: Response.t()
   def place_query(input, options \\ []) do
     params = options
     |> Keyword.merge([input: input])
@@ -884,7 +886,7 @@ defmodule GoogleMaps do
       iex> is_list(result["predictions"])
       true
   """
-  @spec get(String.t, keyword()) :: Response.t()
+  @spec get(String.t, options()) :: Response.t()
   def get(endpoint, params) do
     Request.get(endpoint, params)
     |> Response.wrap
