@@ -32,7 +32,7 @@ defmodule GoogleMaps do
 
   @type mode :: String.t
 
-  @doc ~S"""
+  @doc """
   Retrives the directions from one point to the other.
 
   Args:
@@ -215,6 +215,79 @@ defmodule GoogleMaps do
     |> Keyword.merge([origin: origin, destination: destination])
 
     GoogleMaps.get("directions", params)
+  end
+
+  @doc """
+  Finds the distance between two addresses.
+
+  ## Args:
+    * `origins` — The starting point for calculating travel distance and time.
+
+    * `destinations` — The finishing point for calculating travel distance and time.
+
+  ## Options:
+
+    * `mode` (defaults to `driving`) — Specifies the mode of transport to use
+      when calculating distance.
+
+    * `language` — The language in which to return results.
+
+    * `avoid` — Introduces restrictions to the route. Valid values are specified
+      in the Restrictions section of this document. Only one restriction can be
+      specified.
+
+    * `units` — Specifies the unit system to use when expressing distance as
+      text. See the Unit Systems section of this document for more information.
+
+    * `arrival_time` — Specifies the desired time of arrival for transit
+      requests, in seconds since midnight, January 1, 1970 UTC. You can specify
+      either `departure_time` or `arrival_time`, but not both. Note that
+      `arrival_time` must be specified as an integer.
+
+    * `departure_time` — The desired time of departure. You can specify the time
+      as an integer in seconds since midnight, January 1, 1970 UTC.
+      Alternatively, you can specify a value of `now`, which sets the departure
+      time to the current time (correct to the nearest second).
+
+    * traffic_model (defaults to `best_guess`) — Specifies the assumptions to
+      use when calculating time in traffic.
+
+    * `transit_mode` — Specifies one or more preferred modes of transit.
+
+    * `transit_routing_preference` — Specifies preferences for transit requests.
+
+  This function returns `{:ok, body}` if the request is successful, and
+  Google returns data. It returns `{:error, error}` when there is HTTP
+  errors, or `{:error, status}` when the request is successful, but 
+  Google returns status codes different than "OK", i.e.:
+  * "NOT_FOUND" 
+  * "ZERO_RESULTS" 
+  * "MAX_WAYPOINTS_EXCEEDED" 
+  * "INVALID_REQUEST"
+  * "OVER_QUERY_LIMIT"
+  * "REQUEST_DENIED"
+  * "UNKNOWN_ERROR"
+
+  ## Examples
+
+      # Distance from Eiffel Tower to Palace of Versailles.
+      iex> {:ok, result} = GoogleMaps.distance("Place d'Armes, 78000 Versailles", "Champ de Mars, 5 Avenue Anatole")
+      iex> result["destination_addresses"]
+      ["Champ de Mars, 2 Allée Adrienne Lecouvreur, 75007 Paris, France"]
+      iex> result["origin_addresses"]
+      ["5 Avenue de Sceaux, 78000 Versailles, France"]
+      iex> [%{"elements" => [%{"distance" => distance}]}] = result["rows"]
+      iex> distance["text"]
+      "24.3 km"
+      iex> distance["value"]
+      24318
+  """
+  @spec distance(address(), address(), keyword()) :: Response.t()
+  def distance(origin, destination, options \\ []) do
+    params = options
+    |> Keyword.merge([origins: origin, destinations: destination])
+
+    GoogleMaps.get("distancematrix", params)
   end
 
   @doc """
