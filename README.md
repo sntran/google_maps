@@ -5,7 +5,7 @@ Elixir wrapper around Google Maps APIs
 ## Services
 
 - [x] [Directions](https://developers.google.com/maps/documentation/directions/intro) - Directions between multiple locations.
-- [ ] [Distance Matrix](https://developers.google.com/maps/documentation/distance-matrix/intro) - Travel time and distance for multiple destinations.
+- [x] [Distance Matrix](https://developers.google.com/maps/documentation/distance-matrix/intro) - Travel time and distance for multiple destinations.
 - [ ] [Elevation](https://developers.google.com/maps/documentation/elevation/intro) - Elevation data for any point in the world.
 - [x] [Geocoding](https://developers.google.com/maps/documentation/geocoding/intro) - Converts between addresses and geographic coordinates.
 - [ ] [Place Add](https://developers.google.com/places/web-service/add-place) - Allows you to supplement the data in Google's Places database with data from your application.
@@ -18,6 +18,7 @@ Elixir wrapper around Google Maps APIs
 
 ## Methods
 
+- `distance/3`
 - `directions/3`
 - `geocode/2`
 - `place_autocomplete/2`
@@ -51,3 +52,13 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
     ```
 
   Or you can use `GOOGLE_MAPS_API_KEY` system environment variable when running in `iex`.
+
+## Development
+
+You'll need a [Google API key](https://console.developers.google.com) with
+all relevant APIs (see above) enabled. Add your key to the environment as specified above.
+
+Then run tests:
+
+`mix deps.get`
+`mix test`
