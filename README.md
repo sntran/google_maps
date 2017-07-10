@@ -23,6 +23,7 @@ Elixir wrapper around Google Maps APIs
 - `geocode/2`
 - `place_autocomplete/2`
 - `place_query/2`
+- `get/2`
 
 ## Installation
 
@@ -43,11 +44,11 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
       [applications: [:google_maps]]
     end
     ```
-  
+
   3. In your application's `config/config.exs`, add:
 
     ```elixir
-    config :google_maps, 
+    config :google_maps,
       api_key: "YOUR API KEY HERE"
     ```
 
@@ -60,5 +61,6 @@ all relevant APIs (see above) enabled. Add your key to the environment as specif
 
 Then run tests:
 
-`mix deps.get`
+`mix deps.get test`
+
 `mix test`

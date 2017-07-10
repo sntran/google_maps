@@ -1,6 +1,6 @@
 defmodule GoogleMaps.Response do
   @moduledoc false
-  
+
   @type t :: {:ok, map()} | {:error, error()}
 
   @type status :: String.t
