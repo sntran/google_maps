@@ -54,6 +54,13 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 
   Or you can use `GOOGLE_MAPS_API_KEY` system environment variable when running in `iex`.
 
+  If separate API keys are needed per request, they can be set through
+  `key` option, i.e.:
+
+  ```elixir
+  GoogleMaps.directions("Toronto", "Montreal", key: API_KEY_1)
+  ```
+
 ## Development
 
 You'll need a [Google API key](https://console.developers.google.com) with
