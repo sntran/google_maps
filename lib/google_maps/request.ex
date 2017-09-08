@@ -3,7 +3,10 @@ defmodule GoogleMaps.Request do
 
   use HTTPoison.Base
 
-  @api_key Application.get_env(:google_maps, :api_key) || System.get_env("GOOGLE_MAPS_API_KEY")
+  defp api_key do
+    Application.get_env(:google_maps, :api_key) || 
+      System.get_env("GOOGLE_MAPS_API_KEY")
+  end
 
   @doc """
   GET an endpoint with param keyword list
@@ -11,7 +14,7 @@ defmodule GoogleMaps.Request do
   @spec get(String.t, keyword()) :: GoogleMaps.Response.t
   def get(endpoint, params) do
     params =
-      [key: @api_key]
+      [key: api_key()]
       |> Keyword.merge(params)
       |> Enum.map(&transform_param/1)
     get("#{endpoint}?#{URI.encode_query(params)}")
