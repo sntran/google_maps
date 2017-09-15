@@ -1,7 +1,7 @@
 defmodule GoogleMaps.Mixfile do
   use Mix.Project
 
-  @version File.read!("VERSION") |> String.strip
+  @version File.read!("VERSION") |> String.trim
 
   def project do
     [app: :google_maps,
