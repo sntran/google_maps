@@ -179,7 +179,7 @@ defmodule GoogleMaps do
       iex> {:ok, result} = GoogleMaps.directions("Toronto", "Montreal")
       iex> [route] = result["routes"]
       iex> route["bounds"]
-      %{"northeast" => %{"lat" => 45.5017123, "lng" => -73.56552289999999},
+      %{"northeast" => %{"lat" => 45.5019417, "lng" => -73.5652739},
       "southwest" => %{"lat" => 43.6533096, "lng" => -79.3834186}}
 
       # Directions for a scenic bicycle journey that avoids major highways.
@@ -189,7 +189,7 @@ defmodule GoogleMaps do
       ...> ])
       iex> [route] = result["routes"]
       iex> route["bounds"]
-      %{"northeast" => %{"lat" => 45.5017123, "lng" => -73.56374989999999},
+      %{"northeast" => %{"lat" => 45.5017123, "lng" => -73.5603477},
       "southwest" => %{"lat" => 43.6532566, "lng" => -79.38303979999999}}
 
       # Transit directions from Brooklyn, New York to Queens, New York.
@@ -277,12 +277,12 @@ defmodule GoogleMaps do
       iex> result["destination_addresses"]
       ["Champ de Mars, 2 Allée Adrienne Lecouvreur, 75007 Paris, France"]
       iex> result["origin_addresses"]
-      ["5 Avenue de Sceaux, 78000 Versailles, France"]
+      ["Place d'Armes, 78000 Versailles, France"]
       iex> [%{"elements" => [%{"distance" => distance}]}] = result["rows"]
       iex> distance["text"]
-      "24.3 km"
+      "25.3 km"
       iex> distance["value"]
-      24318
+      25324
   """
   @spec distance(address(), address(), options()) :: Response.t()
   def distance(origin, destination, options \\ []) do
@@ -482,11 +482,11 @@ defmodule GoogleMaps do
       iex> {:ok, %{"results" => [result]}} =
       ...>  GoogleMaps.geocode("1600 Amphitheatre Parkway, Mountain View, CA")
       iex> result["formatted_address"]
-      "Google Bldg 41, 1600 Amphitheatre Pkwy, Mountain View, CA 94043, USA"
+      "Google Bldg 42, 1600 Amphitheatre Pkwy, Mountain View, CA 94043, USA"
       iex> result["geometry"]["location"]["lat"]
-      37.4224082
+      37.4216548
       iex> result["geometry"]["location"]["lng"]
-      -122.0856086
+      -122.0856374
 
       iex> {:ok, %{"results" => [result|_]}} =
       ...>  GoogleMaps.geocode({40.714224,-73.961452})
@@ -716,7 +716,7 @@ defmodule GoogleMaps do
       # Searching for "Paris"
       iex> {:ok, result} = GoogleMaps.place_autocomplete("Paris France")
       iex> Enum.count(result["predictions"])
-      3
+      5
       iex> [paris | _rest] = result["predictions"]
       iex> paris["description"]
       "Paris, France"
@@ -867,12 +867,12 @@ defmodule GoogleMaps do
       ...> ])
       iex> [route] = result["routes"]
       iex> route["bounds"]
-      %{"northeast" => %{"lat" => 34.135827, "lng" => -117.9220826},
-      "southwest" => %{"lat" => 33.8151707, "lng" => -118.3517026}}
+      %{"northeast" => %{"lat" => 34.1358282, "lng" => -117.9220826},
+      "southwest" => %{"lat" => 33.8151707, "lng" => -118.3517014}}
 
       iex> {:ok, result} = GoogleMaps.get("place/autocomplete", [input: "Paris, France"])
       iex> Enum.count(result["predictions"])
-      3
+      5
       iex> [paris | _rest] = result["predictions"]
       iex> paris["description"]
       "Paris, France"
