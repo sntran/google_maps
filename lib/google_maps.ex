@@ -179,8 +179,8 @@ defmodule GoogleMaps do
       iex> {:ok, result} = GoogleMaps.directions("Toronto", "Montreal")
       iex> [route] = result["routes"]
       iex> route["bounds"]
-      %{"northeast" => %{"lat" => 45.5019417, "lng" => -73.5652739},
-      "southwest" => %{"lat" => 43.6533096, "lng" => -79.3834186}}
+      %{"northeast" => %{"lat" => 45.5017123, "lng" => -73.5375346},
+       "southwest" => %{"lat" => 43.6533096, "lng" => -79.3834186}}
 
       # Directions for a scenic bicycle journey that avoids major highways.
       iex> {:ok, result} = GoogleMaps.directions("Toronto", "Montreal", [
@@ -189,7 +189,7 @@ defmodule GoogleMaps do
       ...> ])
       iex> [route] = result["routes"]
       iex> route["bounds"]
-      %{"northeast" => %{"lat" => 45.5017123, "lng" => -73.5603477},
+      %{"northeast" => %{"lat" => 45.5017123, "lng" => -73.563532},
       "southwest" => %{"lat" => 43.6532566, "lng" => -79.38303979999999}}
 
       # Transit directions from Brooklyn, New York to Queens, New York.
@@ -280,9 +280,9 @@ defmodule GoogleMaps do
       ["Place d'Armes, 78000 Versailles, France"]
       iex> [%{"elements" => [%{"distance" => distance}]}] = result["rows"]
       iex> distance["text"]
-      "25.3 km"
+      "23.8 km"
       iex> distance["value"]
-      25324
+      23765
   """
   @spec distance(address(), address(), options()) :: Response.t()
   def distance(origin, destination, options \\ []) do
@@ -482,11 +482,11 @@ defmodule GoogleMaps do
       iex> {:ok, %{"results" => [result]}} =
       ...>  GoogleMaps.geocode("1600 Amphitheatre Parkway, Mountain View, CA")
       iex> result["formatted_address"]
-      "Google Bldg 42, 1600 Amphitheatre Pkwy, Mountain View, CA 94043, USA"
+      "Google Building 41, 1600 Amphitheatre Pkwy, Mountain View, CA 94043, USA"
       iex> result["geometry"]["location"]["lat"]
-      37.4216548
+      37.4224082
       iex> result["geometry"]["location"]["lng"]
-      -122.0856374
+      -122.0856086
 
       iex> {:ok, %{"results" => [result|_]}} =
       ...>  GoogleMaps.geocode({40.714224,-73.961452})
@@ -715,8 +715,8 @@ defmodule GoogleMaps do
 
       # Searching for "Paris"
       iex> {:ok, result} = GoogleMaps.place_autocomplete("Paris France")
-      iex> Enum.count(result["predictions"])
-      5
+      iex> Enum.count(result["predictions"]) > 0
+      true
       iex> [paris | _rest] = result["predictions"]
       iex> paris["description"]
       "Paris, France"
@@ -851,6 +851,112 @@ defmodule GoogleMaps do
     GoogleMaps.get("place/queryautocomplete", params)
   end
 
+@doc """
+  Search for nearby places based on location and keywords
+
+  `nearby_search/3/4` - Most common use for Places API.
+
+  `nearby_search/1/2` - Intended for use with `rankby` 
+    when you cant use radius.
+
+## Args:
+
+    * `location` — The latitude/longitude around which to
+      retrieve place information. This must be specified as
+      *latitude,longitude*.
+
+    * `radius` — Defines the distance (in meters) within which
+      to return place results. The maximum allowed radius is 50 000 meters.
+      Note that radius must not be included if rankby=distance
+      (described under Optional parameters below) is specified
+
+    * `keyword` — The text string on which to search. The Places
+      service will return candidate matches based on this
+      string and order results based on their perceived relevance.
+
+  ## Options:
+
+    * `language` — The language code, indicating in which language the
+      results should be returned, if possible. Searches are also biased
+      to the selected language; results in the selected language may be
+      given a higher ranking. See the [list of supported languages](https://developers.google.com/maps/faq#languagesupport)
+      and their codes. Note that we often update supported languages so
+      this list may not be exhaustive. If language is not supplied, the
+      Places service will attempt to use the native language of the
+      domain from which the request is sent.
+
+    * `minprice` and `maxprice` - Restricts results to only those places 
+      within the specified price level. Valid values are in the range 
+      from 0 (most affordable) to 4 (most expensive), inclusive. 
+      The exact amount indicated by a specific value will vary from 
+      region to region.
+
+    * `opennow` - Returns only those places that are open for business at
+      the time the query is sent. Places that do not specify opening hours
+      in the Google Places database will not be returned if you include
+      this parameter in your query.
+
+    * `region` - The region code, specified as a ccTLD (country code top-level domain)
+      two-character value. Most ccTLD codes are identical to ISO 3166-1 codes,
+      with some exceptions. This parameter will only influence, not fully restrict,
+      search results. If more relevant results exist outside of the specified region,
+      they may be included. When this parameter is used, the country name is omitted
+      from the resulting formatted_address for results in the specified region.
+
+    * `name` - A term to be matched against all content that Google has indexed for this place.
+      Equivalent to keyword. The name field is no longer restricted to place names.
+      Values in this field are combined with values in the keyword field and passed
+      as part of the same search string. We recommend using only the keyword parameter
+      for all search terms.
+
+    * `type` - Restricts the results to places matching the specified type. 
+      Only one type may be specified (if more than one type is provided, 
+      all types following the first entry are ignored). 
+      See the [list of supported types](https://developers.google.com/places/web-service/supported_types).
+
+    * `rankby` - Specifies the order in which results are listed. 
+      Note that rankby must not be included if radius(described under Required parameters above) is specified.
+      Possible values are:
+
+      * `prominence` - (default). This option sorts results based on their importance.
+        Ranking will favor prominent places within the specified area. 
+        Prominence can be affected by a place's ranking in Google's index,
+        global popularity, and other factors.
+
+      * `distance` - This option biases search results in ascending order by
+        their distance from the specified location. When distance is specified,
+        one or more of keyword, name, or type is required.
+
+  ## Returns
+
+  ## Examples
+
+  # Search for museums 500 meters around the White house 
+  iex> {:ok, response} = GoogleMaps.nearby_search("38.8990252802915,-77.0351808197085", 500, "museum")
+  iex> is_list(response["results"])
+  true
+  
+  # Search for museums by the white house but rank by distance
+  iex> {:ok, response} = GoogleMaps.nearby_search(
+  ...>  "38.8990252802915,-77.0351808197085",
+  ...>  [rankby: "distance",
+  ...>  keyword: "museum"])
+  iex>  List.first(response["results"])["name"]
+  "Renwick Gallery"
+"""
+  @spec nearby_search(String.t, options() | String.t, integer, String.t options()) :: Response.t()
+  def nearby_search(location, options \\ []) do
+    params = options
+    |> Keyword.merge([location: location])
+    GoogleMaps.get("place/nearbysearch", params)
+  end
+
+  def nearby_search(location, radius, keyword, options \\ []) do
+    params = options
+    |> Keyword.merge([location: location, radius: radius, keyword: keyword])
+    GoogleMaps.get("place/nearbysearch", params)
+  end
+
   @doc """
   Direct request to Google Maps API endpoint.
 
@@ -867,12 +973,12 @@ defmodule GoogleMaps do
       ...> ])
       iex> [route] = result["routes"]
       iex> route["bounds"]
-      %{"northeast" => %{"lat" => 34.1358282, "lng" => -117.9220826},
-      "southwest" => %{"lat" => 33.8151707, "lng" => -118.3517014}}
+      %{"northeast" => %{"lat" => 34.1373841, "lng" => -117.9220826},
+       "southwest" => %{"lat" => 33.8151707, "lng" => -118.3575456}}
 
       iex> {:ok, result} = GoogleMaps.get("place/autocomplete", [input: "Paris, France"])
-      iex> Enum.count(result["predictions"])
-      5
+      iex> Enum.count(result["predictions"]) > 0
+      true
       iex> [paris | _rest] = result["predictions"]
       iex> paris["description"]
       "Paris, France"
