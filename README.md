@@ -29,37 +29,37 @@ Elixir wrapper around Google Maps APIs
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed as:
 
-  1. Add `google_maps` to your list of dependencies in `mix.exs`:
+1. Add `google_maps` to your list of dependencies in `mix.exs`:
 
-    ```elixir
-    def deps do
-      [{:google_maps, "~> 0.5"}]
-    end
-    ```
+```elixir
+def deps do
+  [{:google_maps, "~> 0.5"}]
+end
+```
 
-  2. Ensure `google_maps` is started before your application:
+2. Ensure `google_maps` is started before your application:
 
-    ```elixir
-    def application do
-      [applications: [:google_maps]]
-    end
-    ```
+```elixir
+def application do
+  [applications: [:google_maps]]
+end
+```
 
-  3. In your application's `config/config.exs`, add:
+3. In your application's `config/config.exs`, add:
 
-    ```elixir
-    config :google_maps,
-      api_key: "YOUR API KEY HERE"
-    ```
+```elixir
+config :google_maps,
+  api_key: "YOUR API KEY HERE"
+```
 
-  Or you can use `GOOGLE_MAPS_API_KEY` system environment variable when running in `iex`.
+Or you can use `GOOGLE_MAPS_API_KEY` system environment variable when running in `iex`.
 
-  If separate API keys are needed per request, they can be set through
-  `key` option, i.e.:
+If separate API keys are needed per request, they can be set through
+`key` option, i.e.:
 
-  ```elixir
-  GoogleMaps.directions("Toronto", "Montreal", key: API_KEY_1)
-  ```
+```elixir
+GoogleMaps.directions("Toronto", "Montreal", key: API_KEY_1)
+```
 
 ## Development
 
