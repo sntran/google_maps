@@ -929,10 +929,15 @@ defmodule GoogleMaps do
     This function returns `{:ok, body}` if the request is successful, and
     Google returns data. The returned body is a map contains four root
     elements:
+    
     * `status` contains metadata on the request.
+
     * `results` contains an array of nearby places.
+
     * `html_attributons` contain a set of attributions about this listing which must be displayed to the user.
+
     * `next_page_token` contains a token that can be used to return up to 20 additional results. 
+
       A `next_page_token` will not be returned if there are no additional results to display. 
       The maximum number of results that can be returned is 60. There is a short delay between when a 
       `next_page_token` is issued, and when it will become valid.
