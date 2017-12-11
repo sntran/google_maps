@@ -866,12 +866,12 @@ defmodule GoogleMaps do
 
 ## Args:
 * `location` — The latitude/longitude around which to
-  retrieve place information. This must be specified as
-  *latitude,longitude*.
+  retrieve place information. Can be in string format: 
+  `"123.456,-123.456"` or tuple format: `{123.456, -123.456}`
 
 * `radius` — Defines the distance (in meters) within which
   to return place results. The maximum allowed radius is 50 000 meters.
-  Note that radius must not be included if rankby=distance
+  Note that radius must not be included if `rankby=distance`
   (described under Optional parameters below) is specified
 
 
@@ -891,7 +891,7 @@ defmodule GoogleMaps do
 
 * `minprice` and `maxprice` - Restricts results to only those places 
   within the specified price level. Valid values are in the range 
-  from 0 (most affordable) to 4 (most expensive), inclusive. 
+  from `0` (most affordable) to `4` (most expensive), inclusive. 
   The exact amount indicated by a specific value will vary from 
   region to region.
 
@@ -927,7 +927,7 @@ defmodule GoogleMaps do
 ## Returns
 
   This function returns `{:ok, body}` if the request is successful, and
-  Google returns data. The returned body is a map contains four root
+  Google returns data. The returned body is a map that contains four root
   elements:
 
   * `status` contains metadata on the request.
@@ -975,7 +975,7 @@ Each result contains the following fields:
     pass this identifier in the placeId field of a Places API request. For more information about place IDs, 
     see the [place ID overview](https://developers.google.com/places/web-service/place-id).
 
-  * `scope` - Indicates the scope of the place_id. The possible values are:
+  * `scope` - Indicates the scope of the `place_id`. The possible values are:
 
     * `APP`: The place ID is recognised by your application only. This is because your application added the place,
       and the place has not yet passed the moderation process.
@@ -993,7 +993,7 @@ Each result contains the following fields:
     * `scope` — The scope of an alternative place ID will always be APP, indicating that the alternative
       place ID is recognised by your application only.
 
-  * `price_level` — The price level of the place, on a scale of 0 to 4. The exact amount indicated by a
+  * `price_level` — The price level of the place, on a scale of `0` to `4`. The exact amount indicated by a
     specific value will vary from region to region. Price levels are interpreted as follows:
 
     * `0` — Free
@@ -1030,11 +1030,25 @@ Each result contains the following fields:
     ...>  500, 
     ...>  [rankby: "distance",
     ...>  keyword: "museum"])
-    iex>  List.first(response["results"])["name"]
-    "Renwick Gallery"
+    iex>  Enum.map(response["results"], fn result -> result["name"] end)
+    ["National Museum of Women in the Arts", "National Geographic Museum",
+     "Madame Tussauds", "Charles Sumner School Museum & Archives",
+     "U.S. Department of the Interior Museum", "Ford's Museum",
+     "Art Museum of the Americas",
+     "National Museum of African American History and Culture",
+     "Tribal Museums & Cultural Centers",
+     "The George Washington University Museum and The Textile Museum",
+     "Smithsonian National Museum of American History", "International Spy Museum",
+     "Smithsonian American Art Museum",
+     "Smithsonian National Museum of Natural History",
+     "Clara Barton Missing Soldiers Office", "National Archives Museum",
+     "Heurich House Museum", "German-American Heritage Museum of the USA",
+     "O Street Museum", "United States Holocaust Memorial Museum"]
 """
   @spec place_nearby(coordinate(), integer, options()) :: Response.t()
-  def place_nearby(location, radius, options \\ []) do
+  def place_nearby(location, radius, options \\ [])
+
+  def place_nearby(location, radius, options) when is_binary(location) do
     params =
     if options[:rankby] == "distance" do
       Keyword.merge(options, [location: location])
@@ -1042,6 +1056,10 @@ Each result contains the following fields:
       Keyword.merge(options, [location: location, radius: radius])
     end
     GoogleMaps.get("place/nearbysearch", params)
+  end
+
+  def place_nearby({latitude, longitude}, radius, options) when is_number(latitude) and is_number(longitude) do
+    place_nearby("#{latitude},#{longitude}", radius, options)
   end
 
   @doc """
