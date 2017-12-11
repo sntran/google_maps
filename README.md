@@ -5,14 +5,14 @@ Elixir wrapper around Google Maps APIs
 ## Services
 
 - [x] [Directions](https://developers.google.com/maps/documentation/directions/intro) - Directions between multiple locations.
-- [x] [Distance Matrix](https://developers.google.com/maps/documentation/distance-matrix/intro) - Travel time and distance for multiple destinations.
+- [x] [Distance Matrix](https://developers.google.com/maps/documentation/distance-matrix/intro) - Travel time and distance for multiple destinations. (contributed by @bnns)
 - [ ] [Elevation](https://developers.google.com/maps/documentation/elevation/intro) - Elevation data for any point in the world.
 - [x] [Geocoding](https://developers.google.com/maps/documentation/geocoding/intro) - Converts between addresses and geographic coordinates.
 - [ ] [Place Add](https://developers.google.com/places/web-service/add-place) - Allows you to supplement the data in Google's Places database with data from your application.
 - [x] [Place Autocomplete](https://developers.google.com/places/web-service/autocomplete) - can be used to automatically fill in the name and/or address of a place as you type.
 - [ ] [Place Details](https://developers.google.com/places/web-service/details) - Returns more detailed information about a specific Place, including user reviews.
 - [ ] [Place Photo](https://developers.google.com/places/web-service/photos) - Gives you access to the millions of Place related photos stored in Google's Place database
-- [x] [Place Nearby Search](https://developers.google.com/places/web-service/search#PlaceSearchRequests) - Returns a list of places within a specified area based on a user's location or search string.
+- [x] [Place Nearby Search](https://developers.google.com/places/web-service/search#PlaceSearchRequests) - Returns a list of places within a specified area based on a user's location or search string. (contributed by @distortia)
 - [x] [Query Autocomplete](https://developers.google.com/places/web-service/query) - can be used to provide a query prediction service for text-based geographic searches, by returning suggested queries as you type.
 - [ ] [Timezone](https://developers.google.com/maps/documentation/timezone/intro) - Time zone data for anywhere in the world.
 
@@ -34,7 +34,7 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 
 ```elixir
 def deps do
-  [{:google_maps, "~> 0.7"}]
+  [{:google_maps, "~> 0.8"}]
 end
 ```
 
