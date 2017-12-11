@@ -863,159 +863,161 @@ defmodule GoogleMaps do
   about each place; additional information is available
   via a Place Details query
 
-  ## Args:
 
-    * `location` — The latitude/longitude around which to
-      retrieve place information. This must be specified as
-      *latitude,longitude*.
+## Args:
+* `location` — The latitude/longitude around which to
+  retrieve place information. This must be specified as
+  *latitude,longitude*.
 
-    * `radius` — Defines the distance (in meters) within which
-      to return place results. The maximum allowed radius is 50 000 meters.
-      Note that radius must not be included if rankby=distance
-      (described under Optional parameters below) is specified
+* `radius` — Defines the distance (in meters) within which
+  to return place results. The maximum allowed radius is 50 000 meters.
+  Note that radius must not be included if rankby=distance
+  (described under Optional parameters below) is specified
 
-  ## Options:
 
-    * `keyword` — The text string on which to search. The Places
-      service will return candidate matches based on this
-      string and order results based on their perceived relevance.
+## Options:
+* `keyword` — The text string on which to search. The Places
+  service will return candidate matches based on this
+  string and order results based on their perceived relevance.
 
-    * `language` — The language code, indicating in which language the
-      results should be returned, if possible. Searches are also biased
-      to the selected language; results in the selected language may be
-      given a higher ranking. See the [list of supported languages](https://developers.google.com/maps/faq#languagesupport)
-      and their codes. Note that we often update supported languages so
-      this list may not be exhaustive. If language is not supplied, the
-      Places service will attempt to use the native language of the
-      domain from which the request is sent.
+* `language` — The language code, indicating in which language the
+  results should be returned, if possible. Searches are also biased
+  to the selected language; results in the selected language may be
+  given a higher ranking. See the [list of supported languages](https://developers.google.com/maps/faq#languagesupport)
+  and their codes. Note that we often update supported languages so
+  this list may not be exhaustive. If language is not supplied, the
+  Places service will attempt to use the native language of the
+  domain from which the request is sent.
 
-    * `minprice` and `maxprice` - Restricts results to only those places 
-      within the specified price level. Valid values are in the range 
-      from 0 (most affordable) to 4 (most expensive), inclusive. 
-      The exact amount indicated by a specific value will vary from 
-      region to region.
+* `minprice` and `maxprice` - Restricts results to only those places 
+  within the specified price level. Valid values are in the range 
+  from 0 (most affordable) to 4 (most expensive), inclusive. 
+  The exact amount indicated by a specific value will vary from 
+  region to region.
 
-    * `opennow` - Returns only those places that are open for business at
-      the time the query is sent. Places that do not specify opening hours
-      in the Google Places database will not be returned if you include
-      this parameter in your query.
+* `opennow` - Returns only those places that are open for business at
+  the time the query is sent. Places that do not specify opening hours
+  in the Google Places database will not be returned if you include
+  this parameter in your query.
 
-    * `name` - A term to be matched against all content that Google has indexed for this place.
-      Equivalent to keyword. The name field is no longer restricted to place names.
-      Values in this field are combined with values in the keyword field and passed
-      as part of the same search string. We recommend using only the keyword parameter
-      for all search terms.
+* `name` - A term to be matched against all content that Google has indexed for this place.
+  Equivalent to keyword. The name field is no longer restricted to place names.
+  Values in this field are combined with values in the keyword field and passed
+  as part of the same search string. We recommend using only the keyword parameter
+  for all search terms.
 
-    * `type` - Restricts the results to places matching the specified type. 
-      Only one type may be specified (if more than one type is provided, 
-      all types following the first entry are ignored). 
-      See the [list of supported types](https://developers.google.com/places/web-service/supported_types).
+* `type` - Restricts the results to places matching the specified type. 
+  Only one type may be specified (if more than one type is provided, 
+  all types following the first entry are ignored). 
+  See the [list of supported types](https://developers.google.com/places/web-service/supported_types).
 
-    * `rankby` - Specifies the order in which results are listed. 
-      Note that rankby must not be included if radius(described under Required parameters above) is specified.
-      Possible values are:
+* `rankby` - Specifies the order in which results are listed. 
+  Note that rankby must not be included if radius(described under Required parameters above) is specified.
+  Possible values are:
 
-      * `prominence` - (default). This option sorts results based on their importance.
-        Ranking will favor prominent places within the specified area. 
-        Prominence can be affected by a place's ranking in Google's index,
-        global popularity, and other factors.
+  * `prominence` - (default). This option sorts results based on their importance.
+    Ranking will favor prominent places within the specified area. 
+    Prominence can be affected by a place's ranking in Google's index,
+    global popularity, and other factors.
 
-      * `distance` - This option biases search results in ascending order by
-        their distance from the specified location. When distance is specified,
-        one or more of keyword, name, or type is required.
+  * `distance` - This option biases search results in ascending order by
+    their distance from the specified location. When distance is specified,
+    one or more of keyword, name, or type is required.
 
-  ## Returns
+## Returns
 
-    This function returns `{:ok, body}` if the request is successful, and
-    Google returns data. The returned body is a map contains four root
-    elements:
-    
-    * `status` contains metadata on the request.
+  This function returns `{:ok, body}` if the request is successful, and
+  Google returns data. The returned body is a map contains four root
+  elements:
 
-    * `results` contains an array of nearby places.
+  * `status` contains metadata on the request.
 
-    * `html_attributons` contain a set of attributions about this listing which must be displayed to the user.
+  * `results` contains an array of nearby places.
 
-    * `next_page_token` contains a token that can be used to return up to 20 additional results. 
+  * `html_attributons` contain a set of attributions about this listing which must be displayed to the user.
 
-      A `next_page_token` will not be returned if there are no additional results to display. 
-      The maximum number of results that can be returned is 60. There is a short delay between when a 
-      `next_page_token` is issued, and when it will become valid.
+  * `next_page_token` contains a token that can be used to return up to 20 additional results. 
 
-    Each result contains the following fields:
+    A `next_page_token` will not be returned if there are no additional results to display. 
+    The maximum number of results that can be returned is 60. There is a short delay between when a 
+    `next_page_token` is issued, and when it will become valid.
 
-    * `geometry` contains geometry information about the result, generally including the location (geocode)
-      of the place and (optionally) the viewport identifying its general area of coverage.
 
-    * `icon` contains the URL of a recommended icon which may be displayed to the user when indicating this result.
+Each result contains the following fields:
 
-    * `name` contains the human-readable name for the returned result. For establishment results, this is usually the business name.
 
-    * `opening_hours` may contain the following information:
+  * `geometry` contains geometry information about the result, generally including the location (geocode)
+    of the place and (optionally) the viewport identifying its general area of coverage.
 
-      * `open_now` is a boolean value indicating if the place is open at the current time.
+  * `icon` contains the URL of a recommended icon which may be displayed to the user when indicating this result.
 
-    * `photos[]` - an array of photo objects, each containing a reference to an image.
-      A Place Search will return at most one photo object. Performing a Place Details request on the place
-      may return up to ten photos. More information about Place Photos and how you can use the images in your
-      application can be found in the [Place Photos](https://developers.google.com/places/web-service/photos) documentation.
-      A photo object is described as:
+  * `name` contains the human-readable name for the returned result. For establishment results, this is usually the business name.
 
-      * `photo_reference` — a string used to identify the photo when you perform a Photo request.
+  * `opening_hours` may contain the following information:
 
-      * `height` — the maximum height of the image.
+    * `open_now` is a boolean value indicating if the place is open at the current time.
 
-      * `width` — the maximum width of the image.
+  * `photos[]` - an array of photo objects, each containing a reference to an image.
+    A Place Search will return at most one photo object. Performing a Place Details request on the place
+    may return up to ten photos. More information about Place Photos and how you can use the images in your
+    application can be found in the [Place Photos](https://developers.google.com/places/web-service/photos) documentation.
+    A photo object is described as:
 
-      * `html_attributions[]` — contains any required attributions. This field will always be present, but may be empty.
+    * `photo_reference` — a string used to identify the photo when you perform a Photo request.
 
-    * `place_id` - a textual identifier that uniquely identifies a place. To retrieve information about the place,
-      pass this identifier in the placeId field of a Places API request. For more information about place IDs, 
-      see the [place ID overview](https://developers.google.com/places/web-service/place-id).
+    * `height` — the maximum height of the image.
 
-    * `scope` - Indicates the scope of the place_id. The possible values are:
+    * `width` — the maximum width of the image.
 
-      * `APP`: The place ID is recognised by your application only. This is because your application added the place,
-        and the place has not yet passed the moderation process.
+    * `html_attributions[]` — contains any required attributions. This field will always be present, but may be empty.
 
-      * `GOOGLE`: The place ID is available to other applications and on Google Maps.
+  * `place_id` - a textual identifier that uniquely identifies a place. To retrieve information about the place,
+    pass this identifier in the placeId field of a Places API request. For more information about place IDs, 
+    see the [place ID overview](https://developers.google.com/places/web-service/place-id).
 
-    * `alt_ids` — An array of zero, one or more alternative place IDs for the place, 
-      with a scope related to each alternative ID. Note: This array may be empty or not present. 
-      If present, it contains the following fields:
+  * `scope` - Indicates the scope of the place_id. The possible values are:
 
-      * `place_id` — The most likely reason for a place to have an alternative place ID is if your application
-        adds a place and receives an application-scoped place ID, then later receives a Google-scoped place ID
-        after passing the moderation process.
+    * `APP`: The place ID is recognised by your application only. This is because your application added the place,
+      and the place has not yet passed the moderation process.
 
-      * `scope` — The scope of an alternative place ID will always be APP, indicating that the alternative
-        place ID is recognised by your application only.
+    * `GOOGLE`: The place ID is available to other applications and on Google Maps.
 
-    * `price_level` — The price level of the place, on a scale of 0 to 4. The exact amount indicated by a
-      specific value will vary from region to region. Price levels are interpreted as follows:
+  * `alt_ids` — An array of zero, one or more alternative place IDs for the place, 
+    with a scope related to each alternative ID. Note: This array may be empty or not present. 
+    If present, it contains the following fields:
 
-      * `0` — Free
+    * `place_id` — The most likely reason for a place to have an alternative place ID is if your application
+      adds a place and receives an application-scoped place ID, then later receives a Google-scoped place ID
+      after passing the moderation process.
 
-      * `1` — Inexpensive
+    * `scope` — The scope of an alternative place ID will always be APP, indicating that the alternative
+      place ID is recognised by your application only.
 
-      * `2` — Moderate
+  * `price_level` — The price level of the place, on a scale of 0 to 4. The exact amount indicated by a
+    specific value will vary from region to region. Price levels are interpreted as follows:
 
-      * `3` — Expensive
+    * `0` — Free
 
-      * `4` — Very Expensive
+    * `1` — Inexpensive
 
-    * `rating` contains the place's rating, from 1.0 to 5.0, based on aggregated user reviews
+    * `2` — Moderate
 
-    * `types` contains an array of feature types describing the given result. 
-      See the [list of supported types](https://developers.google.com/places/web-service/supported_types#table2).
+    * `3` — Expensive
 
-    * `vicinity` contains a feature name of a nearby location. Often this feature refers to a street or
-      neighborhood within the given results.
+    * `4` — Very Expensive
 
-    * `permanently_closed` is a boolean flag indicating whether the place has permanently shut down (value true).
-      If the place is not permanently closed, the flag is absent from the response.
+  * `rating` contains the place's rating, from 1.0 to 5.0, based on aggregated user reviews
 
-  ## Examples
+  * `types` contains an array of feature types describing the given result. 
+    See the [list of supported types](https://developers.google.com/places/web-service/supported_types#table2).
+
+  * `vicinity` contains a feature name of a nearby location. Often this feature refers to a street or
+    neighborhood within the given results.
+
+  * `permanently_closed` is a boolean flag indicating whether the place has permanently shut down (value true).
+    If the place is not permanently closed, the flag is absent from the response.
+
+## Examples
 
     # Search for museums 500 meters around the White house 
     iex> {:ok, response} = GoogleMaps.place_nearby("38.8990252802915,-77.0351808197085", 500)
