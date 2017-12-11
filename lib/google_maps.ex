@@ -179,8 +179,8 @@ defmodule GoogleMaps do
       iex> {:ok, result} = GoogleMaps.directions("Toronto", "Montreal")
       iex> [route] = result["routes"]
       iex> route["bounds"]
-      %{"northeast" => %{"lat" => 45.5019417, "lng" => -73.5652739},
-      "southwest" => %{"lat" => 43.6533096, "lng" => -79.3834186}}
+      %{"northeast" => %{"lat" => 45.5017123, "lng" => -73.5375346},
+       "southwest" => %{"lat" => 43.6533096, "lng" => -79.3834186}}
 
       # Directions for a scenic bicycle journey that avoids major highways.
       iex> {:ok, result} = GoogleMaps.directions("Toronto", "Montreal", [
@@ -189,7 +189,7 @@ defmodule GoogleMaps do
       ...> ])
       iex> [route] = result["routes"]
       iex> route["bounds"]
-      %{"northeast" => %{"lat" => 45.5017123, "lng" => -73.5603477},
+      %{"northeast" => %{"lat" => 45.5017123, "lng" => -73.563532},
       "southwest" => %{"lat" => 43.6532566, "lng" => -79.38303979999999}}
 
       # Transit directions from Brooklyn, New York to Queens, New York.
@@ -280,9 +280,9 @@ defmodule GoogleMaps do
       ["Place d'Armes, 78000 Versailles, France"]
       iex> [%{"elements" => [%{"distance" => distance}]}] = result["rows"]
       iex> distance["text"]
-      "25.3 km"
+      "23.8 km"
       iex> distance["value"]
-      25324
+      23765
   """
   @spec distance(address(), address(), options()) :: Response.t()
   def distance(origin, destination, options \\ []) do
@@ -482,11 +482,11 @@ defmodule GoogleMaps do
       iex> {:ok, %{"results" => [result]}} =
       ...>  GoogleMaps.geocode("1600 Amphitheatre Parkway, Mountain View, CA")
       iex> result["formatted_address"]
-      "Google Bldg 42, 1600 Amphitheatre Pkwy, Mountain View, CA 94043, USA"
+      "Google Building 41, 1600 Amphitheatre Pkwy, Mountain View, CA 94043, USA"
       iex> result["geometry"]["location"]["lat"]
-      37.4216548
+      37.4224082
       iex> result["geometry"]["location"]["lng"]
-      -122.0856374
+      -122.0856086
 
       iex> {:ok, %{"results" => [result|_]}} =
       ...>  GoogleMaps.geocode({40.714224,-73.961452})
@@ -715,8 +715,8 @@ defmodule GoogleMaps do
 
       # Searching for "Paris"
       iex> {:ok, result} = GoogleMaps.place_autocomplete("Paris France")
-      iex> Enum.count(result["predictions"])
-      5
+      iex> Enum.count(result["predictions"]) > 0
+      true
       iex> [paris | _rest] = result["predictions"]
       iex> paris["description"]
       "Paris, France"
@@ -851,6 +851,217 @@ defmodule GoogleMaps do
     GoogleMaps.get("place/queryautocomplete", params)
   end
 
+@doc """
+  Search for nearby places based on location and radius.
+
+  The Google Places API Web Service allows you to query
+  for place information on a variety of categories, 
+  such as: establishments, prominent points of interest,
+  geographic locations, and more. You can search for places
+  either by proximity or a text string. A Place Search 
+  returns a list of places along with summary information
+  about each place; additional information is available
+  via a Place Details query
+
+
+## Args:
+* `location` — The latitude/longitude around which to
+  retrieve place information. Can be in string format: 
+  `"123.456,-123.456"` or tuple format: `{123.456, -123.456}`
+
+* `radius` — Defines the distance (in meters) within which
+  to return place results. The maximum allowed radius is 50 000 meters.
+  Note that radius must not be included if `rankby=distance`
+  (described under Optional parameters below) is specified
+
+
+## Options:
+* `keyword` — The text string on which to search. The Places
+  service will return candidate matches based on this
+  string and order results based on their perceived relevance.
+
+* `language` — The language code, indicating in which language the
+  results should be returned, if possible. Searches are also biased
+  to the selected language; results in the selected language may be
+  given a higher ranking. See the [list of supported languages](https://developers.google.com/maps/faq#languagesupport)
+  and their codes. Note that we often update supported languages so
+  this list may not be exhaustive. If language is not supplied, the
+  Places service will attempt to use the native language of the
+  domain from which the request is sent.
+
+* `minprice` and `maxprice` - Restricts results to only those places 
+  within the specified price level. Valid values are in the range 
+  from `0` (most affordable) to `4` (most expensive), inclusive. 
+  The exact amount indicated by a specific value will vary from 
+  region to region.
+
+* `opennow` - Returns only those places that are open for business at
+  the time the query is sent. Places that do not specify opening hours
+  in the Google Places database will not be returned if you include
+  this parameter in your query.
+
+* `name` - A term to be matched against all content that Google has indexed for this place.
+  Equivalent to keyword. The name field is no longer restricted to place names.
+  Values in this field are combined with values in the keyword field and passed
+  as part of the same search string. We recommend using only the keyword parameter
+  for all search terms.
+
+* `type` - Restricts the results to places matching the specified type. 
+  Only one type may be specified (if more than one type is provided, 
+  all types following the first entry are ignored). 
+  See the [list of supported types](https://developers.google.com/places/web-service/supported_types).
+
+* `rankby` - Specifies the order in which results are listed. 
+  Note that rankby must not be included if radius(described under Required parameters above) is specified.
+  Possible values are:
+
+  * `prominence` - (default). This option sorts results based on their importance.
+    Ranking will favor prominent places within the specified area. 
+    Prominence can be affected by a place's ranking in Google's index,
+    global popularity, and other factors.
+
+  * `distance` - This option biases search results in ascending order by
+    their distance from the specified location. When distance is specified,
+    one or more of keyword, name, or type is required.
+
+## Returns
+
+  This function returns `{:ok, body}` if the request is successful, and
+  Google returns data. The returned body is a map that contains four root
+  elements:
+
+  * `status` contains metadata on the request.
+
+  * `results` contains an array of nearby places.
+
+  * `html_attributons` contain a set of attributions about this listing which must be displayed to the user.
+
+  * `next_page_token` contains a token that can be used to return up to 20 additional results. 
+
+    A `next_page_token` will not be returned if there are no additional results to display. 
+    The maximum number of results that can be returned is 60. There is a short delay between when a 
+    `next_page_token` is issued, and when it will become valid.
+
+
+Each result contains the following fields:
+
+
+  * `geometry` contains geometry information about the result, generally including the location (geocode)
+    of the place and (optionally) the viewport identifying its general area of coverage.
+
+  * `icon` contains the URL of a recommended icon which may be displayed to the user when indicating this result.
+
+  * `name` contains the human-readable name for the returned result. For establishment results, this is usually the business name.
+
+  * `opening_hours` may contain the following information:
+
+    * `open_now` is a boolean value indicating if the place is open at the current time.
+
+  * `photos[]` - an array of photo objects, each containing a reference to an image.
+    A Place Search will return at most one photo object. Performing a Place Details request on the place
+    may return up to ten photos. More information about Place Photos and how you can use the images in your
+    application can be found in the [Place Photos](https://developers.google.com/places/web-service/photos) documentation.
+    A photo object is described as:
+
+    * `photo_reference` — a string used to identify the photo when you perform a Photo request.
+
+    * `height` — the maximum height of the image.
+
+    * `width` — the maximum width of the image.
+
+    * `html_attributions[]` — contains any required attributions. This field will always be present, but may be empty.
+
+  * `place_id` - a textual identifier that uniquely identifies a place. To retrieve information about the place,
+    pass this identifier in the placeId field of a Places API request. For more information about place IDs, 
+    see the [place ID overview](https://developers.google.com/places/web-service/place-id).
+
+  * `scope` - Indicates the scope of the `place_id`. The possible values are:
+
+    * `APP`: The place ID is recognised by your application only. This is because your application added the place,
+      and the place has not yet passed the moderation process.
+
+    * `GOOGLE`: The place ID is available to other applications and on Google Maps.
+
+  * `alt_ids` — An array of zero, one or more alternative place IDs for the place, 
+    with a scope related to each alternative ID. Note: This array may be empty or not present. 
+    If present, it contains the following fields:
+
+    * `place_id` — The most likely reason for a place to have an alternative place ID is if your application
+      adds a place and receives an application-scoped place ID, then later receives a Google-scoped place ID
+      after passing the moderation process.
+
+    * `scope` — The scope of an alternative place ID will always be APP, indicating that the alternative
+      place ID is recognised by your application only.
+
+  * `price_level` — The price level of the place, on a scale of `0` to `4`. The exact amount indicated by a
+    specific value will vary from region to region. Price levels are interpreted as follows:
+
+    * `0` — Free
+
+    * `1` — Inexpensive
+
+    * `2` — Moderate
+
+    * `3` — Expensive
+
+    * `4` — Very Expensive
+
+  * `rating` contains the place's rating, from 1.0 to 5.0, based on aggregated user reviews
+
+  * `types` contains an array of feature types describing the given result. 
+    See the [list of supported types](https://developers.google.com/places/web-service/supported_types#table2).
+
+  * `vicinity` contains a feature name of a nearby location. Often this feature refers to a street or
+    neighborhood within the given results.
+
+  * `permanently_closed` is a boolean flag indicating whether the place has permanently shut down (value true).
+    If the place is not permanently closed, the flag is absent from the response.
+
+## Examples
+
+    # Search for museums 500 meters around the White house 
+    iex> {:ok, response} = GoogleMaps.place_nearby("38.8990252802915,-77.0351808197085", 500)
+    iex> is_list(response["results"])
+    true
+    
+    # Search for museums by the white house but rank by distance
+    iex> {:ok, response} = GoogleMaps.place_nearby(
+    ...>  "38.8990252802915,-77.0351808197085",
+    ...>  500, 
+    ...>  [rankby: "distance",
+    ...>  keyword: "museum"])
+    iex>  Enum.map(response["results"], fn result -> result["name"] end)
+    ["National Museum of Women in the Arts", "National Geographic Museum",
+     "Madame Tussauds", "Charles Sumner School Museum & Archives",
+     "U.S. Department of the Interior Museum", "Ford's Museum",
+     "Art Museum of the Americas",
+     "National Museum of African American History and Culture",
+     "Tribal Museums & Cultural Centers",
+     "The George Washington University Museum and The Textile Museum",
+     "Smithsonian National Museum of American History", "International Spy Museum",
+     "Smithsonian American Art Museum",
+     "Smithsonian National Museum of Natural History",
+     "Clara Barton Missing Soldiers Office", "National Archives Museum",
+     "Heurich House Museum", "German-American Heritage Museum of the USA",
+     "O Street Museum", "United States Holocaust Memorial Museum"]
+"""
+  @spec place_nearby(coordinate(), integer, options()) :: Response.t()
+  def place_nearby(location, radius, options \\ [])
+
+  def place_nearby(location, radius, options) when is_binary(location) do
+    params =
+    if options[:rankby] == "distance" do
+      Keyword.merge(options, [location: location])
+    else
+      Keyword.merge(options, [location: location, radius: radius])
+    end
+    GoogleMaps.get("place/nearbysearch", params)
+  end
+
+  def place_nearby({latitude, longitude}, radius, options) when is_number(latitude) and is_number(longitude) do
+    place_nearby("#{latitude},#{longitude}", radius, options)
+  end
+
   @doc """
   Direct request to Google Maps API endpoint.
 
@@ -867,12 +1078,12 @@ defmodule GoogleMaps do
       ...> ])
       iex> [route] = result["routes"]
       iex> route["bounds"]
-      %{"northeast" => %{"lat" => 34.1358282, "lng" => -117.9220826},
-      "southwest" => %{"lat" => 33.8151707, "lng" => -118.3517014}}
+      %{"northeast" => %{"lat" => 34.1373841, "lng" => -117.9220826},
+       "southwest" => %{"lat" => 33.8151707, "lng" => -118.3575456}}
 
       iex> {:ok, result} = GoogleMaps.get("place/autocomplete", [input: "Paris, France"])
-      iex> Enum.count(result["predictions"])
-      5
+      iex> Enum.count(result["predictions"]) > 0
+      true
       iex> [paris | _rest] = result["predictions"]
       iex> paris["description"]
       "Paris, France"

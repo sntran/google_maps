@@ -23,6 +23,7 @@ Elixir wrapper around Google Maps APIs
 - `geocode/2`
 - `place_autocomplete/2`
 - `place_query/2`
+- `place_nearby/3`
 - `get/2`
 
 ## Installation
