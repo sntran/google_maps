@@ -14,7 +14,7 @@ Elixir wrapper around Google Maps APIs
 - [ ] [Place Photo](https://developers.google.com/places/web-service/photos) - Gives you access to the millions of Place related photos stored in Google's Place database
 - [x] [Place Nearby Search](https://developers.google.com/places/web-service/search#PlaceSearchRequests) - Returns a list of places within a specified area based on a user's location or search string. (contributed by @distortia)
 - [x] [Query Autocomplete](https://developers.google.com/places/web-service/query) - can be used to provide a query prediction service for text-based geographic searches, by returning suggested queries as you type.
-- [ ] [Timezone](https://developers.google.com/maps/documentation/timezone/intro) - Time zone data for anywhere in the world.
+- [x] [Timezone](https://developers.google.com/maps/documentation/timezone/intro) - Time zone data for anywhere in the world.
 
 ## Methods
 
@@ -25,6 +25,7 @@ Elixir wrapper around Google Maps APIs
 - `place_query/2`
 - `place_nearby/3`
 - `place_details/2`
+- `timezone/2`
 - `get/2`
 
 ## Installation
