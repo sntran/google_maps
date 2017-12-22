@@ -163,7 +163,7 @@ defmodule GoogleMaps do
 
   This function returns `{:ok, body}` if the request is successful, and
   Google returns data. It returns `{:error, error}` when there is HTTP
-  errors, or `{:error, status}` when the request is successful, but
+  errors, or `{:error, status, error_message}` when the request is successful, but
   Google returns status codes different than "OK", i.e.:
     * "NOT_FOUND"
     * "ZERO_RESULTS"
@@ -175,11 +175,18 @@ defmodule GoogleMaps do
 
   ## Examples
 
+      # Driving directions with an invalid API key
+      iex> {:error, status, error_message} = GoogleMaps.directions("Toronto", "Montreal", key: "invalid key")
+      iex> status
+      "REQUEST_DENIED"
+      iex> error_message
+      "The provided API key is invalid."
+
       # Driving directions from Toronto, Ontario to Montreal, Quebec.
       iex> {:ok, result} = GoogleMaps.directions("Toronto", "Montreal")
       iex> [route] = result["routes"]
       iex> route["bounds"]
-      %{"northeast" => %{"lat" => 45.5024881, "lng" => -73.5655647},
+      %{"northeast" => %{"lat" => 45.5017123, "lng" => -73.5672184},
       "southwest" => %{"lat" => 43.6533096, "lng" => -79.3834186}}
 
       # Directions for a scenic bicycle journey that avoids major highways.
@@ -260,7 +267,7 @@ defmodule GoogleMaps do
 
   This function returns `{:ok, body}` if the request is successful, and
   Google returns data. It returns `{:error, error}` when there is HTTP
-  errors, or `{:error, status}` when the request is successful, but
+  errors, or `{:error, status, error_message}` when the request is successful, but
   Google returns status codes different than "OK", i.e.:
   * "NOT_FOUND"
   * "ZERO_RESULTS"
@@ -271,6 +278,13 @@ defmodule GoogleMaps do
   * "UNKNOWN_ERROR"
 
   ## Examples
+
+      # Distance with an invalid API key
+      iex> {:error, status, error_message} = GoogleMaps.distance("Place d'Armes, 78000 Versailles", "Champ de Mars, 5 Avenue Anatole", key: "invalid key")
+      iex> status
+      "REQUEST_DENIED"
+      iex> error_message
+      "The provided API key is invalid."
 
       # Distance from Eiffel Tower to Palace of Versailles.
       iex> {:ok, result} = GoogleMaps.distance("Place d'Armes, 78000 Versailles", "Champ de Mars, 5 Avenue Anatole")
@@ -479,6 +493,13 @@ defmodule GoogleMaps do
 
   ## Examples
 
+      # Geocode with an invalid API key
+      iex> {:error, status, error_message} = GoogleMaps.geocode("1600 Amphitheatre Parkway, Mountain View, CA", key: "invalid key")
+      iex> status
+      "REQUEST_DENIED"
+      iex> error_message
+      "The provided API key is invalid."
+
       iex> {:ok, %{"results" => [result]}} =
       ...>  GoogleMaps.geocode("1600 Amphitheatre Parkway, Mountain View, CA")
       iex> result["formatted_address"]
@@ -665,7 +686,7 @@ defmodule GoogleMaps do
     via a separate query. See Place Details Requests.
 
     It returns `{:error, error}` when there is HTTP
-    errors, or `{:error, status}` when the request is successful, but
+    errors, or `{:error, status, error_message}` when the request is successful, but
     Google returns status codes different than "OK", i.e.:
       * "NOT_FOUND"
       * "ZERO_RESULTS"
@@ -712,6 +733,13 @@ defmodule GoogleMaps do
     [adding places](https://developers.google.com/places/web-service/add-place).
 
   ## Examples
+
+      # Searching with an invalid API key
+      iex> {:error, status, error_message} = GoogleMaps.place_autocomplete("Paris France", key: "invalid key")
+      iex> status
+      "REQUEST_DENIED"
+      iex> error_message
+      "The provided API key is invalid."
 
       # Searching for "Paris"
       iex> {:ok, result} = GoogleMaps.place_autocomplete("Paris France")
@@ -833,6 +861,13 @@ defmodule GoogleMaps do
 
   ## Examples
 
+      # A request with an invalid API key
+      iex> {:error, status, error_message} = GoogleMaps.place_query("Pizza near Par", key: "invalid key")
+      iex> status
+      "REQUEST_DENIED"
+      iex> error_message
+      "The provided API key is invalid."
+
       # A request "Pizza near Par":
       iex> {:ok, result} = GoogleMaps.place_query("Pizza near Par")
       iex> is_list(result["predictions"])
@@ -851,189 +886,196 @@ defmodule GoogleMaps do
     GoogleMaps.get("place/queryautocomplete", params)
   end
 
-@doc """
-  Search for nearby places based on location and radius.
+  @doc """
+    Search for nearby places based on location and radius.
 
-  The Google Places API Web Service allows you to query
-  for place information on a variety of categories, 
-  such as: establishments, prominent points of interest,
-  geographic locations, and more. You can search for places
-  either by proximity or a text string. A Place Search 
-  returns a list of places along with summary information
-  about each place; additional information is available
-  via a Place Details query
-
-
-## Args:
-* `location` — The latitude/longitude around which to
-  retrieve place information. Can be in string format: 
-  `"123.456,-123.456"` or tuple format: `{123.456, -123.456}`
-
-* `radius` — Defines the distance (in meters) within which
-  to return place results. The maximum allowed radius is 50 000 meters.
-  Note that radius must not be included if `rankby=distance`
-  (described under Optional parameters below) is specified
+    The Google Places API Web Service allows you to query
+    for place information on a variety of categories, 
+    such as: establishments, prominent points of interest,
+    geographic locations, and more. You can search for places
+    either by proximity or a text string. A Place Search 
+    returns a list of places along with summary information
+    about each place; additional information is available
+    via a Place Details query
 
 
-## Options:
-* `keyword` — The text string on which to search. The Places
-  service will return candidate matches based on this
-  string and order results based on their perceived relevance.
+  ## Args:
+  * `location` — The latitude/longitude around which to
+    retrieve place information. Can be in string format: 
+    `"123.456,-123.456"` or tuple format: `{123.456, -123.456}`
 
-* `language` — The language code, indicating in which language the
-  results should be returned, if possible. Searches are also biased
-  to the selected language; results in the selected language may be
-  given a higher ranking. See the [list of supported languages](https://developers.google.com/maps/faq#languagesupport)
-  and their codes. Note that we often update supported languages so
-  this list may not be exhaustive. If language is not supplied, the
-  Places service will attempt to use the native language of the
-  domain from which the request is sent.
-
-* `minprice` and `maxprice` - Restricts results to only those places 
-  within the specified price level. Valid values are in the range 
-  from `0` (most affordable) to `4` (most expensive), inclusive. 
-  The exact amount indicated by a specific value will vary from 
-  region to region.
-
-* `opennow` - Returns only those places that are open for business at
-  the time the query is sent. Places that do not specify opening hours
-  in the Google Places database will not be returned if you include
-  this parameter in your query.
-
-* `name` - A term to be matched against all content that Google has indexed for this place.
-  Equivalent to keyword. The name field is no longer restricted to place names.
-  Values in this field are combined with values in the keyword field and passed
-  as part of the same search string. We recommend using only the keyword parameter
-  for all search terms.
-
-* `type` - Restricts the results to places matching the specified type. 
-  Only one type may be specified (if more than one type is provided, 
-  all types following the first entry are ignored). 
-  See the [list of supported types](https://developers.google.com/places/web-service/supported_types).
-
-* `rankby` - Specifies the order in which results are listed. 
-  Note that rankby must not be included if radius(described under Required parameters above) is specified.
-  Possible values are:
-
-  * `prominence` - (default). This option sorts results based on their importance.
-    Ranking will favor prominent places within the specified area. 
-    Prominence can be affected by a place's ranking in Google's index,
-    global popularity, and other factors.
-
-  * `distance` - This option biases search results in ascending order by
-    their distance from the specified location. When distance is specified,
-    one or more of keyword, name, or type is required.
-
-## Returns
-
-  This function returns `{:ok, body}` if the request is successful, and
-  Google returns data. The returned body is a map that contains four root
-  elements:
-
-  * `status` contains metadata on the request.
-
-  * `results` contains an array of nearby places.
-
-  * `html_attributons` contain a set of attributions about this listing which must be displayed to the user.
-
-  * `next_page_token` contains a token that can be used to return up to 20 additional results. 
-
-    A `next_page_token` will not be returned if there are no additional results to display. 
-    The maximum number of results that can be returned is 60. There is a short delay between when a 
-    `next_page_token` is issued, and when it will become valid.
+  * `radius` — Defines the distance (in meters) within which
+    to return place results. The maximum allowed radius is 50 000 meters.
+    Note that radius must not be included if `rankby=distance`
+    (described under Optional parameters below) is specified
 
 
-Each result contains the following fields:
+  ## Options:
+  * `keyword` — The text string on which to search. The Places
+    service will return candidate matches based on this
+    string and order results based on their perceived relevance.
+
+  * `language` — The language code, indicating in which language the
+    results should be returned, if possible. Searches are also biased
+    to the selected language; results in the selected language may be
+    given a higher ranking. See the [list of supported languages](https://developers.google.com/maps/faq#languagesupport)
+    and their codes. Note that we often update supported languages so
+    this list may not be exhaustive. If language is not supplied, the
+    Places service will attempt to use the native language of the
+    domain from which the request is sent.
+
+  * `minprice` and `maxprice` - Restricts results to only those places 
+    within the specified price level. Valid values are in the range 
+    from `0` (most affordable) to `4` (most expensive), inclusive. 
+    The exact amount indicated by a specific value will vary from 
+    region to region.
+
+  * `opennow` - Returns only those places that are open for business at
+    the time the query is sent. Places that do not specify opening hours
+    in the Google Places database will not be returned if you include
+    this parameter in your query.
+
+  * `name` - A term to be matched against all content that Google has indexed for this place.
+    Equivalent to keyword. The name field is no longer restricted to place names.
+    Values in this field are combined with values in the keyword field and passed
+    as part of the same search string. We recommend using only the keyword parameter
+    for all search terms.
+
+  * `type` - Restricts the results to places matching the specified type. 
+    Only one type may be specified (if more than one type is provided, 
+    all types following the first entry are ignored). 
+    See the [list of supported types](https://developers.google.com/places/web-service/supported_types).
+
+  * `rankby` - Specifies the order in which results are listed. 
+    Note that rankby must not be included if radius(described under Required parameters above) is specified.
+    Possible values are:
+
+    * `prominence` - (default). This option sorts results based on their importance.
+      Ranking will favor prominent places within the specified area. 
+      Prominence can be affected by a place's ranking in Google's index,
+      global popularity, and other factors.
+
+    * `distance` - This option biases search results in ascending order by
+      their distance from the specified location. When distance is specified,
+      one or more of keyword, name, or type is required.
+
+  ## Returns
+
+    This function returns `{:ok, body}` if the request is successful, and
+    Google returns data. The returned body is a map that contains four root
+    elements:
+
+    * `status` contains metadata on the request.
+
+    * `results` contains an array of nearby places.
+
+    * `html_attributons` contain a set of attributions about this listing which must be displayed to the user.
+
+    * `next_page_token` contains a token that can be used to return up to 20 additional results. 
+
+      A `next_page_token` will not be returned if there are no additional results to display. 
+      The maximum number of results that can be returned is 60. There is a short delay between when a 
+      `next_page_token` is issued, and when it will become valid.
 
 
-  * `geometry` contains geometry information about the result, generally including the location (geocode)
-    of the place and (optionally) the viewport identifying its general area of coverage.
+  Each result contains the following fields:
 
-  * `icon` contains the URL of a recommended icon which may be displayed to the user when indicating this result.
 
-  * `name` contains the human-readable name for the returned result. For establishment results, this is usually the business name.
+    * `geometry` contains geometry information about the result, generally including the location (geocode)
+      of the place and (optionally) the viewport identifying its general area of coverage.
 
-  * `opening_hours` may contain the following information:
+    * `icon` contains the URL of a recommended icon which may be displayed to the user when indicating this result.
 
-    * `open_now` is a boolean value indicating if the place is open at the current time.
+    * `name` contains the human-readable name for the returned result. For establishment results, this is usually the business name.
 
-  * `photos[]` - an array of photo objects, each containing a reference to an image.
-    A Place Search will return at most one photo object. Performing a Place Details request on the place
-    may return up to ten photos. More information about Place Photos and how you can use the images in your
-    application can be found in the [Place Photos](https://developers.google.com/places/web-service/photos) documentation.
-    A photo object is described as:
+    * `opening_hours` may contain the following information:
 
-    * `photo_reference` — a string used to identify the photo when you perform a Photo request.
+      * `open_now` is a boolean value indicating if the place is open at the current time.
 
-    * `height` — the maximum height of the image.
+    * `photos[]` - an array of photo objects, each containing a reference to an image.
+      A Place Search will return at most one photo object. Performing a Place Details request on the place
+      may return up to ten photos. More information about Place Photos and how you can use the images in your
+      application can be found in the [Place Photos](https://developers.google.com/places/web-service/photos) documentation.
+      A photo object is described as:
 
-    * `width` — the maximum width of the image.
+      * `photo_reference` — a string used to identify the photo when you perform a Photo request.
 
-    * `html_attributions[]` — contains any required attributions. This field will always be present, but may be empty.
+      * `height` — the maximum height of the image.
 
-  * `place_id` - a textual identifier that uniquely identifies a place. To retrieve information about the place,
-    pass this identifier in the placeId field of a Places API request. For more information about place IDs, 
-    see the [place ID overview](https://developers.google.com/places/web-service/place-id).
+      * `width` — the maximum width of the image.
 
-  * `scope` - Indicates the scope of the `place_id`. The possible values are:
+      * `html_attributions[]` — contains any required attributions. This field will always be present, but may be empty.
 
-    * `APP`: The place ID is recognised by your application only. This is because your application added the place,
-      and the place has not yet passed the moderation process.
+    * `place_id` - a textual identifier that uniquely identifies a place. To retrieve information about the place,
+      pass this identifier in the placeId field of a Places API request. For more information about place IDs, 
+      see the [place ID overview](https://developers.google.com/places/web-service/place-id).
 
-    * `GOOGLE`: The place ID is available to other applications and on Google Maps.
+    * `scope` - Indicates the scope of the `place_id`. The possible values are:
 
-  * `alt_ids` — An array of zero, one or more alternative place IDs for the place, 
-    with a scope related to each alternative ID. Note: This array may be empty or not present. 
-    If present, it contains the following fields:
+      * `APP`: The place ID is recognised by your application only. This is because your application added the place,
+        and the place has not yet passed the moderation process.
 
-    * `place_id` — The most likely reason for a place to have an alternative place ID is if your application
-      adds a place and receives an application-scoped place ID, then later receives a Google-scoped place ID
-      after passing the moderation process.
+      * `GOOGLE`: The place ID is available to other applications and on Google Maps.
 
-    * `scope` — The scope of an alternative place ID will always be APP, indicating that the alternative
-      place ID is recognised by your application only.
+    * `alt_ids` — An array of zero, one or more alternative place IDs for the place, 
+      with a scope related to each alternative ID. Note: This array may be empty or not present. 
+      If present, it contains the following fields:
 
-  * `price_level` — The price level of the place, on a scale of `0` to `4`. The exact amount indicated by a
-    specific value will vary from region to region. Price levels are interpreted as follows:
+      * `place_id` — The most likely reason for a place to have an alternative place ID is if your application
+        adds a place and receives an application-scoped place ID, then later receives a Google-scoped place ID
+        after passing the moderation process.
 
-    * `0` — Free
+      * `scope` — The scope of an alternative place ID will always be APP, indicating that the alternative
+        place ID is recognised by your application only.
 
-    * `1` — Inexpensive
+    * `price_level` — The price level of the place, on a scale of `0` to `4`. The exact amount indicated by a
+      specific value will vary from region to region. Price levels are interpreted as follows:
 
-    * `2` — Moderate
+      * `0` — Free
 
-    * `3` — Expensive
+      * `1` — Inexpensive
 
-    * `4` — Very Expensive
+      * `2` — Moderate
 
-  * `rating` contains the place's rating, from 1.0 to 5.0, based on aggregated user reviews
+      * `3` — Expensive
 
-  * `types` contains an array of feature types describing the given result. 
-    See the [list of supported types](https://developers.google.com/places/web-service/supported_types#table2).
+      * `4` — Very Expensive
 
-  * `vicinity` contains a feature name of a nearby location. Often this feature refers to a street or
-    neighborhood within the given results.
+    * `rating` contains the place's rating, from 1.0 to 5.0, based on aggregated user reviews
 
-  * `permanently_closed` is a boolean flag indicating whether the place has permanently shut down (value true).
-    If the place is not permanently closed, the flag is absent from the response.
+    * `types` contains an array of feature types describing the given result. 
+      See the [list of supported types](https://developers.google.com/places/web-service/supported_types#table2).
 
-## Examples
+    * `vicinity` contains a feature name of a nearby location. Often this feature refers to a street or
+      neighborhood within the given results.
 
-    # Search for museums 500 meters around the White house 
-    iex> {:ok, response} = GoogleMaps.place_nearby("38.8990252802915,-77.0351808197085", 500)
-    iex> is_list(response["results"])
-    true
-    
-    # Search for museums by the white house but rank by distance
-    iex> {:ok, response} = GoogleMaps.place_nearby(
-    ...>  "38.8990252802915,-77.0351808197085",
-    ...>  500, 
-    ...>  [rankby: "distance",
-    ...>  keyword: "museum"])
-    iex>  Enum.any?(response["results"],
-    ...>  fn result -> result["name"] == "National Museum of Women in the Arts" end)
-    true
-"""
+    * `permanently_closed` is a boolean flag indicating whether the place has permanently shut down (value true).
+      If the place is not permanently closed, the flag is absent from the response.
+
+  ## Examples
+
+      # Search with an invalid API key
+      iex> {:error, status, error_message} = GoogleMaps.place_nearby("38.8990252802915,-77.0351808197085", 500, key: "invalid key")
+      iex> status
+      "REQUEST_DENIED"
+      iex> error_message
+      "The provided API key is invalid."
+
+      # Search for museums 500 meters around the White house 
+      iex> {:ok, response} = GoogleMaps.place_nearby("38.8990252802915,-77.0351808197085", 500)
+      iex> is_list(response["results"])
+      true
+      
+      # Search for museums by the white house but rank by distance
+      iex> {:ok, response} = GoogleMaps.place_nearby(
+      ...>  "38.8990252802915,-77.0351808197085",
+      ...>  500, 
+      ...>  [rankby: "distance",
+      ...>  keyword: "museum"])
+      iex>  Enum.any?(response["results"],
+      ...>  fn result -> result["name"] == "National Museum of Women in the Arts" end)
+      true
+  """
   @spec place_nearby(coordinate(), integer, options()) :: Response.t()
   def place_nearby(location, radius, options \\ [])
 
@@ -1051,248 +1093,254 @@ Each result contains the following fields:
     place_nearby("#{latitude},#{longitude}", radius, options)
   end
 
-@doc """
-  A Place Details request returns more comprehensive information about the indicated place
-  such as its complete address, phone number, user rating and reviews.
+  @doc """
+    A Place Details request returns more comprehensive information about the indicated place
+    such as its complete address, phone number, user rating and reviews.
 
-## Args:
+  ## Args:
 
-  * `place_id` — A textual identifier that uniquely identifies a place,
-    returned from a [Place Search](https://developers.google.com/places/web-service/search).
-    For more information about place IDs, see the [place ID overview](https://developers.google.com/places/web-service/place-id).
+    * `place_id` — A textual identifier that uniquely identifies a place,
+      returned from a [Place Search](https://developers.google.com/places/web-service/search).
+      For more information about place IDs, see the [place ID overview](https://developers.google.com/places/web-service/place-id).
 
-    Can be in the following formats:
+      Can be in the following formats:
 
-    * tuple: `{:place_id, "ChIJy5RYvL23t4kR3U1oXsAxEzs"}`
+      * tuple: `{:place_id, "ChIJy5RYvL23t4kR3U1oXsAxEzs"}`
 
-    * place_id string: `"place_id:ChIJy5RYvL23t4kR3U1oXsAxEzs"`
+      * place_id string: `"place_id:ChIJy5RYvL23t4kR3U1oXsAxEzs"`
 
-    * string: `"ChIJy5RYvL23t4kR3U1oXsAxEzs"`
+      * string: `"ChIJy5RYvL23t4kR3U1oXsAxEzs"`
 
-## Options:
+  ## Options:
 
-  * `language` — The language code, indicating in which language the
-    results should be returned, if possible. Searches are also biased
-    to the selected language; results in the selected language may be
-    given a higher ranking. See the [list of supported languages](https://developers.google.com/maps/faq#languagesupport)
-    and their codes. Note that we often update supported languages so
-    this list may not be exhaustive. If language is not supplied, the
-    Places service will attempt to use the native language of the
-    domain from which the request is sent.
+    * `language` — The language code, indicating in which language the
+      results should be returned, if possible. Searches are also biased
+      to the selected language; results in the selected language may be
+      given a higher ranking. See the [list of supported languages](https://developers.google.com/maps/faq#languagesupport)
+      and their codes. Note that we often update supported languages so
+      this list may not be exhaustive. If language is not supplied, the
+      Places service will attempt to use the native language of the
+      domain from which the request is sent.
 
-  * `region` — The region code, specified as a [ccTLD](https://en.wikipedia.org/wiki/CcTLD) (country code top-level domain)
-    two-character value. Most ccTLD codes are identical to ISO 3166-1 codes,
-    with some exceptions. This parameter will only influence, not fully restrict,
-    results. If more relevant results exist outside of the specified region,
-    they may be included. When this parameter is used, the country name is
-    omitted from the resulting `formatted_address` for results in the specified region.
-  
-## Returns
-  
-  This function returns `{:ok, body}` if the request is successful, and
-  Google returns data. The returned body is a map that contains three root
-  elements:
-
-  * `status` contains metadata on the request.
-
-  * `result` contains the detailed information about the place requested
-
-  * `html_attributions` contains a set of attributions about this listing which must be displayed to the user.
-
-Each result contains the following fields:
-
-  * `address_components[]` is an array containing the separate components applicable to this address.
-    Each address component typically contains the following fields:
-
-    * `types[]` is an array indicating the type of the address component.
-
-    * `long_name` is the full text description or name of the address component as returned by the Geocoder.
+    * `region` — The region code, specified as a [ccTLD](https://en.wikipedia.org/wiki/CcTLD) (country code top-level domain)
+      two-character value. Most ccTLD codes are identical to ISO 3166-1 codes,
+      with some exceptions. This parameter will only influence, not fully restrict,
+      results. If more relevant results exist outside of the specified region,
+      they may be included. When this parameter is used, the country name is
+      omitted from the resulting `formatted_address` for results in the specified region.
     
-    * `short_name` is an abbreviated textual name for the address component, if available.
-      For example, an address component for the state of Alaska may have a `long_name` of
-      "Alaska" and a `short_name` of "AK" using the 2-letter postal abbreviation.
+  ## Returns
+    
+    This function returns `{:ok, body}` if the request is successful, and
+    Google returns data. The returned body is a map that contains three root
+    elements:
 
-    Note the following facts about the address_components[] array:
+    * `status` contains metadata on the request.
 
-      * The array of address components may contain more components than the `formatted_address.`
+    * `result` contains the detailed information about the place requested
 
-      * The array does not necessarily include all the political entities that contain an address,
-        apart from those included in the formatted_address. To retrieve all the political entities
-        that contain a specific address, you should use reverse geocoding, passing the
-        latitude/longitude of the address as a parameter to the request
+    * `html_attributions` contains a set of attributions about this listing which must be displayed to the user.
 
-      * The format of the response is not guaranteed to remain the same between requests.
-        In particular, the number of `address_components` varies based on the address requested
-        and can change over time for the same address. A component can change position in the array.
-        The type of the component can change. A particular component may be missing in a later response.
+  Each result contains the following fields:
 
-  * `formatted_address` is a string containing the human-readable address of this place.
+    * `address_components[]` is an array containing the separate components applicable to this address.
+      Each address component typically contains the following fields:
 
-    Often this address is equivalent to the postal address. Note that some countries,
-    such as the United Kingdom, do not allow distribution of true postal addresses due to licensing restrictions.
+      * `types[]` is an array indicating the type of the address component.
 
-    The formatted address is logically composed of one or more address components. For example, the address
-    "111 8th Avenue, New York, NY" consists of the following components: "111" (the street number),
-    "8th Avenue" (the route), "New York" (the city) and "NY" (the US state).
+      * `long_name` is the full text description or name of the address component as returned by the Geocoder.
+      
+      * `short_name` is an abbreviated textual name for the address component, if available.
+        For example, an address component for the state of Alaska may have a `long_name` of
+        "Alaska" and a `short_name` of "AK" using the 2-letter postal abbreviation.
 
-    Do not parse the formatted address programmatically. Instead you should use the individual address components,
-    which the API response includes in addition to the formatted address field
+      Note the following facts about the address_components[] array:
 
-  * `formatted_phone_number` contains the place's phone number in its [local format](http://en.wikipedia.org/wiki/Local_conventions_for_writing_telephone_numbers).
-    For example, the `formatted_phone_number` for Google's Sydney, Australia office is `(02) 9374 4000`.
+        * The array of address components may contain more components than the `formatted_address.`
 
-  * `adr_address` is a representation of the place's address in the [adr microformat](http://microformats.org/wiki/adr).
+        * The array does not necessarily include all the political entities that contain an address,
+          apart from those included in the formatted_address. To retrieve all the political entities
+          that contain a specific address, you should use reverse geocoding, passing the
+          latitude/longitude of the address as a parameter to the request
 
-  * `geometry` contains the following information:
+        * The format of the response is not guaranteed to remain the same between requests.
+          In particular, the number of `address_components` varies based on the address requested
+          and can change over time for the same address. A component can change position in the array.
+          The type of the component can change. A particular component may be missing in a later response.
 
-    * `location` contains the geocoded latitude,longitude value for this place.
+    * `formatted_address` is a string containing the human-readable address of this place.
 
-    * `viewport` contains the preferred viewport when displaying this place on a map as a `LatLngBounds` if it is known.
+      Often this address is equivalent to the postal address. Note that some countries,
+      such as the United Kingdom, do not allow distribution of true postal addresses due to licensing restrictions.
 
-  * `icon` contains the URL of a suggested icon which may be displayed to the user when indicating this result on a map.
+      The formatted address is logically composed of one or more address components. For example, the address
+      "111 8th Avenue, New York, NY" consists of the following components: "111" (the street number),
+      "8th Avenue" (the route), "New York" (the city) and "NY" (the US state).
 
-  * `international_phone_number` contains the place's phone number in international format.
-    International format includes the country code, and is prefixed with the plus (+) sign.
-    For example, the `international_phone_number` for Google's Sydney, Australia office is `+61 2 9374 4000`
+      Do not parse the formatted address programmatically. Instead you should use the individual address components,
+      which the API response includes in addition to the formatted address field
 
-  * `name` contains the human-readable name for the returned result.
-    For `establishment` results, this is usually the canonicalized business name.
+    * `formatted_phone_number` contains the place's phone number in its [local format](http://en.wikipedia.org/wiki/Local_conventions_for_writing_telephone_numbers).
+      For example, the `formatted_phone_number` for Google's Sydney, Australia office is `(02) 9374 4000`.
 
-  * `opening_hours` contains the following information:
+    * `adr_address` is a representation of the place's address in the [adr microformat](http://microformats.org/wiki/adr).
 
-    * `open_now` is a boolean value indicating if the place is open at the current time.
+    * `geometry` contains the following information:
 
-    * `periods[]` is an array of opening periods covering seven days, starting from Sunday, in chronological order.
-      Each period contains:
+      * `location` contains the geocoded latitude,longitude value for this place.
 
-      * `open` contains a pair of day and time objects describing when the place opens:
+      * `viewport` contains the preferred viewport when displaying this place on a map as a `LatLngBounds` if it is known.
 
-        * `day` a number from 0–6, corresponding to the days of the week, starting on Sunday. For example, 2 means Tuesday.
+    * `icon` contains the URL of a suggested icon which may be displayed to the user when indicating this result on a map.
 
-        * `time` may contain a time of day in 24-hour hhmm format. Values are in the range 0000–2359. 
-          The `time` will be reported in the place’s time zone.
+    * `international_phone_number` contains the place's phone number in international format.
+      International format includes the country code, and is prefixed with the plus (+) sign.
+      For example, the `international_phone_number` for Google's Sydney, Australia office is `+61 2 9374 4000`
 
-      * `close` may contain a pair of day and time objects describing when the place closes.
-        Note: If a place is always open, the close section will be missing from the response.
-        Clients can rely on always-open being represented as an open period containing day
-        with value 0 and time with value 0000, and no close.
+    * `name` contains the human-readable name for the returned result.
+      For `establishment` results, this is usually the canonicalized business name.
 
-    * `weekday_text` is an array of seven strings representing the formatted opening hours for each day of the week.
-      If a language parameter was specified in the Place Details request, the Places Service will format and localize
-      the opening hours appropriately for that language. The ordering of the elements in this array depends on the
-      language parameter. Some languages start the week on Monday while others start on Sunday.
+    * `opening_hours` contains the following information:
 
-  * `permanently_closed` is a boolean flag indicating whether the place has permanently shut down (value `true`).
-    If the place is not permanently closed, the flag is absent from the response.
+      * `open_now` is a boolean value indicating if the place is open at the current time.
 
-  * `photos[]` — an array of photo objects, each containing a reference to an image.
-    A Place Details request may return up to ten photos.
-    More information about place photos and how you can use the images in your application can be found in the [Place Photos documentation](https://developers.google.com/places/web-service/photos).
-    A photo object is described as:
+      * `periods[]` is an array of opening periods covering seven days, starting from Sunday, in chronological order.
+        Each period contains:
 
-      * `photo_reference` — a string used to identify the photo when you perform a Photo request.
+        * `open` contains a pair of day and time objects describing when the place opens:
 
-      * `height` — the maximum height of the image.
+          * `day` a number from 0–6, corresponding to the days of the week, starting on Sunday. For example, 2 means Tuesday.
 
-      * `width` — the maximum width of the image.
+          * `time` may contain a time of day in 24-hour hhmm format. Values are in the range 0000–2359. 
+            The `time` will be reported in the place’s time zone.
 
-      * `html_attributions[]` — contains any required attributions. This field will always be present, but may be empty.
+        * `close` may contain a pair of day and time objects describing when the place closes.
+          Note: If a place is always open, the close section will be missing from the response.
+          Clients can rely on always-open being represented as an open period containing day
+          with value 0 and time with value 0000, and no close.
 
-  * `place_id`: A textual identifier that uniquely identifies a place. To retrieve information about the place, pass this
-  identifier in the placeId field of a Places API request. For more information about place IDs, see the [place ID overview](https://developers.google.com/places/web-service/place-id).
+      * `weekday_text` is an array of seven strings representing the formatted opening hours for each day of the week.
+        If a language parameter was specified in the Place Details request, the Places Service will format and localize
+        the opening hours appropriately for that language. The ordering of the elements in this array depends on the
+        language parameter. Some languages start the week on Monday while others start on Sunday.
 
-  * `scope`: Indicates the scope of the place_id. The possible values are:
+    * `permanently_closed` is a boolean flag indicating whether the place has permanently shut down (value `true`).
+      If the place is not permanently closed, the flag is absent from the response.
 
-    * `APP`: The place ID is recognised by your application only. This is because your application added the place,
-      and the place has not yet passed the moderation process.
+    * `photos[]` — an array of photo objects, each containing a reference to an image.
+      A Place Details request may return up to ten photos.
+      More information about place photos and how you can use the images in your application can be found in the [Place Photos documentation](https://developers.google.com/places/web-service/photos).
+      A photo object is described as:
 
-    * `GOOGLE`: The place ID is available to other applications and on Google Maps.
+        * `photo_reference` — a string used to identify the photo when you perform a Photo request.
 
-  * `alt_ids` — An array of zero, one or more alternative place IDs for the place, with a scope related to each alternative ID.
-    Note: This array may be empty or not present. If present, it contains the following fields:
+        * `height` — the maximum height of the image.
 
-    * `place_id` — The most likely reason for a place to have an alternative place ID is if your application
-      adds a place and receives an application-scoped place ID, then later receives a Google-scoped place
-      ID after passing the moderation process.
+        * `width` — the maximum width of the image.
 
-    * `scope` — The scope of an alternative place ID will always be APP, indicating that the alternative
-      place ID is recognised by your application only.
+        * `html_attributions[]` — contains any required attributions. This field will always be present, but may be empty.
 
-  * `price_level` — The price level of the place, on a scale of `0` to `4`.
-    The exact amount indicated by a specific value will vary from region to region.
-    Price levels are interpreted as follows:
+    * `place_id`: A textual identifier that uniquely identifies a place. To retrieve information about the place, pass this
+    identifier in the placeId field of a Places API request. For more information about place IDs, see the [place ID overview](https://developers.google.com/places/web-service/place-id).
 
-    * `0` — Free
+    * `scope`: Indicates the scope of the place_id. The possible values are:
 
-    * `1` — Inexpensive
+      * `APP`: The place ID is recognised by your application only. This is because your application added the place,
+        and the place has not yet passed the moderation process.
 
-    * `2` — Moderate
+      * `GOOGLE`: The place ID is available to other applications and on Google Maps.
 
-    * `3` — Expensive
+    * `alt_ids` — An array of zero, one or more alternative place IDs for the place, with a scope related to each alternative ID.
+      Note: This array may be empty or not present. If present, it contains the following fields:
 
-    * `4` — Very Expensive
+      * `place_id` — The most likely reason for a place to have an alternative place ID is if your application
+        adds a place and receives an application-scoped place ID, then later receives a Google-scoped place
+        ID after passing the moderation process.
 
-  * `rating` contains the place's rating, from 1.0 to 5.0, based on aggregated user reviews.
+      * `scope` — The scope of an alternative place ID will always be APP, indicating that the alternative
+        place ID is recognised by your application only.
 
-  * `reviews[]` a JSON array of up to five reviews. If a language parameter was specified in
-    the Place Details request, the Places Service will bias the results to prefer reviews written in that language.
-    Each review consists of several components:
+    * `price_level` — The price level of the place, on a scale of `0` to `4`.
+      The exact amount indicated by a specific value will vary from region to region.
+      Price levels are interpreted as follows:
 
-    * `aspects` contains a collection of AspectRating objects, each of which provides a rating of a
-      single attribute of the establishment. The first object in the collection is considered the primary aspect.
-      Each AspectRating is described as:
+      * `0` — Free
 
-      * `type` the name of the aspect that is being rated.
-        The following types are supported: `appeal`, `atmosphere`, `decor`, `facilities`, `food`, `overall`, `quality` and `service`.
+      * `1` — Inexpensive
 
-      * `rating` the user's rating for this particular aspect, from 0 to 3.
+      * `2` — Moderate
 
-    * `author_name` the name of the user who submitted the review. Anonymous reviews are attributed to "A Google user".
+      * `3` — Expensive
 
-    * `author_url` the URL to the user's Google Maps Local Guides profile, if available.
+      * `4` — Very Expensive
 
-    * `language` an IETF language code indicating the language used in the user's review. This field contains the main
-      language tag only, and not the secondary tag indicating country or region. For example, all the English reviews
-      are tagged as 'en', and not 'en-AU' or 'en-UK' and so on.
+    * `rating` contains the place's rating, from 1.0 to 5.0, based on aggregated user reviews.
 
-    * `rating` the user's overall rating for this place. This is a whole number, ranging from 1 to 5.
+    * `reviews[]` a JSON array of up to five reviews. If a language parameter was specified in
+      the Place Details request, the Places Service will bias the results to prefer reviews written in that language.
+      Each review consists of several components:
 
-    * `text` the user's review. When reviewing a location with Google Places, text reviews are considered optional.
-      Therefore, this field may by empty. Note that this field may include simple HTML markup.
-      For example, the entity reference `&amp;` may represent an ampersand character.
+      * `aspects` contains a collection of AspectRating objects, each of which provides a rating of a
+        single attribute of the establishment. The first object in the collection is considered the primary aspect.
+        Each AspectRating is described as:
 
-    * `time` the time that the review was submitted, measured in the number of seconds since since midnight, January 1, 1970 UTC.
+        * `type` the name of the aspect that is being rated.
+          The following types are supported: `appeal`, `atmosphere`, `decor`, `facilities`, `food`, `overall`, `quality` and `service`.
 
-  * `types[]` contains an array of feature types describing the given result. See the [list of supported types](https://developers.google.com/places/web-service/supported_types#table2).
+        * `rating` the user's rating for this particular aspect, from 0 to 3.
 
-  * `url` contains the URL of the official Google page for this place. This will be the Google-owned page that contains the
-    best available information about the place. Applications must link to or embed this page on any screen that shows
-    detailed results about the place to the user.
+      * `author_name` the name of the user who submitted the review. Anonymous reviews are attributed to "A Google user".
 
-  * `utc_offset` contains the number of minutes this place’s current timezone is offset from UTC.
-    For example, for places in Sydney, Australia during daylight saving time this would be 660 (+11 hours from UTC),
-    and for places in California outside of daylight saving time this would be -480 (-8 hours from UTC).
+      * `author_url` the URL to the user's Google Maps Local Guides profile, if available.
 
-  * `vicinity` lists a simplified address for the place, including the street name, street number, and locality,
-    but not the province/state, postal code, or country. For example, Google's Sydney,
-    Australia office has a vicinity value of 48 Pirrama Road, Pyrmont.
+      * `language` an IETF language code indicating the language used in the user's review. This field contains the main
+        language tag only, and not the secondary tag indicating country or region. For example, all the English reviews
+        are tagged as 'en', and not 'en-AU' or 'en-UK' and so on.
 
-  * `website` lists the authoritative website for this place, such as a business' homepage.
+      * `rating` the user's overall rating for this place. This is a whole number, ranging from 1 to 5.
 
-## Examples
+      * `text` the user's review. When reviewing a location with Google Places, text reviews are considered optional.
+        Therefore, this field may by empty. Note that this field may include simple HTML markup.
+        For example, the entity reference `&amp;` may represent an ampersand character.
 
-    iex> {:ok, response} = GoogleMaps.place_details({:place_id, "ChIJy5RYvL23t4kR3U1oXsAxEzs"})
-    iex> is_map(response["result"])
-    true
+      * `time` the time that the review was submitted, measured in the number of seconds since since midnight, January 1, 1970 UTC.
 
-    iex> {:ok, response} = GoogleMaps.place_details("place_id:ChIJy5RYvL23t4kR3U1oXsAxEzs")
-    iex> response["result"]["name"]
-    "719-751 Madison Pl NW"
+    * `types[]` contains an array of feature types describing the given result. See the [list of supported types](https://developers.google.com/places/web-service/supported_types#table2).
 
-    iex> {:ok, response} = GoogleMaps.place_details("ChIJy5RYvL23t4kR3U1oXsAxEzs")
-    iex> response["result"]["formatted_address"]
-    "719-751 Madison Pl NW, Washington, DC 20005, USA"
-"""
+    * `url` contains the URL of the official Google page for this place. This will be the Google-owned page that contains the
+      best available information about the place. Applications must link to or embed this page on any screen that shows
+      detailed results about the place to the user.
+
+    * `utc_offset` contains the number of minutes this place’s current timezone is offset from UTC.
+      For example, for places in Sydney, Australia during daylight saving time this would be 660 (+11 hours from UTC),
+      and for places in California outside of daylight saving time this would be -480 (-8 hours from UTC).
+
+    * `vicinity` lists a simplified address for the place, including the street name, street number, and locality,
+      but not the province/state, postal code, or country. For example, Google's Sydney,
+      Australia office has a vicinity value of 48 Pirrama Road, Pyrmont.
+
+    * `website` lists the authoritative website for this place, such as a business' homepage.
+
+  ## Examples
+
+      iex> {:error, status, error_message} = GoogleMaps.place_details({:place_id, "ChIJy5RYvL23t4kR3U1oXsAxEzs"}, key: "invalid key")
+      iex> status
+      "REQUEST_DENIED"
+      iex> error_message
+      "The provided API key is invalid."
+
+      iex> {:ok, response} = GoogleMaps.place_details({:place_id, "ChIJy5RYvL23t4kR3U1oXsAxEzs"})
+      iex> is_map(response["result"])
+      true
+
+      iex> {:ok, response} = GoogleMaps.place_details("place_id:ChIJy5RYvL23t4kR3U1oXsAxEzs")
+      iex> response["result"]["name"]
+      "719-751 Madison Pl NW"
+
+      iex> {:ok, response} = GoogleMaps.place_details("ChIJy5RYvL23t4kR3U1oXsAxEzs")
+      iex> response["result"]["formatted_address"]
+      "719-751 Madison Pl NW, Washington, DC 20005, USA"
+  """
   @spec place_details(place_id, options()) :: Response.t()
   def place_details(place_id, options \\ [])
 
@@ -1320,6 +1368,16 @@ Each result contains the following fields:
   It takes an endpoint string, and a keyword list of parameters.
 
   ## Examples
+
+      iex> {:error, status, error_message} = GoogleMaps.get("directions", [
+      ...>   origin: "Disneyland",
+      ...>   destination: "Universal Studios Hollywood",
+      ...>   key: "invalid key",
+      ...> ])
+      iex> status
+      "REQUEST_DENIED"
+      iex> error_message
+      "The provided API key is invalid."
 
       iex> {:ok, result} = GoogleMaps.get("directions", [
       ...>   origin: "Disneyland",
