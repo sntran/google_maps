@@ -1311,6 +1311,76 @@ Each result contains the following fields:
     place_details({:place_id, place_id}, options)
   end
 
+
+  @doc """
+    A Timezone request returns timezone information for the given location.
+
+  ## Args:
+
+    * `location` - A comma-separated latitude / longitude tuple (eg, location = -33.86,151.20),
+      which represents the location to be searched.
+    * `timestamp` - Specifies the desired time in seconds after midnight, UTC,
+      from January 1, 1970. Google Maps Time Zone API uses timestamp to determine
+      if summer time should be applied. The hours before 1970 can be expressed as negative values.
+
+  ## Options:
+
+    * `language` — The language code, indicating in which language the
+      results should be returned, if possible. Searches are also biased
+      to the selected language; results in the selected language may be
+      given a higher ranking. See the [list of supported languages](https://developers.google.com/maps/faq#languagesupport)
+      and their codes. Note that we often update supported languages so
+      this list may not be exhaustive. If language is not supplied, the
+      Places service will attempt to use the native language of the
+      domain from which the request is sent.
+
+  ## Returns
+
+    This function returns `{:ok, body}` if the request is successful, and
+    Google returns data. The returned body is a map that contains four root
+    elements:
+
+    * `dstOffset` The time difference for summer time in seconds.
+      This value will be zero if the time zone is not in daylight saving time
+      during the specified timestamp.
+
+    * `rawOffset` The time difference with respect to UTC (in seconds)
+      for the determined location. This does not consider summer timetables.
+
+    * `timeZoneId` A string that contains the id. of "tz" in the time zone,
+      such as "United States / Los_Angeles" or "Australia / Sydney"
+
+    * `timeZoneName` A string that contains the name in long format the
+      time zone This field will be located if the parameter is configured of
+      language; p. eg, "Pacific Summer Time" or "Summer Time from Eastern Australia".
+
+    * `status` contains metadata on the request.
+
+  ## Examples
+
+      iex> {:ok, response} = GoogleMaps.timezone({8.6069305,104.7196242})
+      iex> is_map(response)
+      true
+
+      iex> {:ok, response} = GoogleMaps.timezone({8.6069305,104.7196242})
+      iex> response["timeZoneId"]
+      "Asia/Saigon"
+  """
+  @spec timezone(coordinate(), options()) :: Response.t()
+  def timezone(input, options \\ [])
+
+  def timezone(location, options) when is_binary(location) do
+    GoogleMaps.get("timezone", timezone_params(location, options))
+  end
+
+  def timezone({lat, lng}, options) when is_number(lat) and is_number(lng) do
+    GoogleMaps.get("timezone", timezone_params("#{lat},#{lng}", options))
+  end
+
+  def timezone_params(location, options) do
+    Keyword.merge(options, [location: location, timestamp: :os.system_time(:seconds)])
+  end
+
   @doc """
   Direct request to Google Maps API endpoint.
 
