@@ -1418,15 +1418,12 @@ defmodule GoogleMaps do
   def timezone(input, options \\ [])
 
   def timezone(location, options) when is_binary(location) do
-    GoogleMaps.get("timezone", timezone_params(location, options))
+    params = Keyword.merge(options, [location: location, timestamp: :os.system_time(:seconds)])
+    GoogleMaps.get("timezone", params)
   end
 
   def timezone({lat, lng}, options) when is_number(lat) and is_number(lng) do
-    GoogleMaps.get("timezone", timezone_params("#{lat},#{lng}", options))
-  end
-
-  def timezone_params(location, options) do
-    Keyword.merge(options, [location: location, timestamp: :os.system_time(:seconds)])
+    timezone("#{lat},#{lng}", options)
   end
 
   @doc """
