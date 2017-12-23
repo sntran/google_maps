@@ -13,4 +13,8 @@ defmodule TimezoneTest do
     assert result["rawOffset"]
     assert result["timeZoneId"]
   end
+
+  test "when there is no result" do
+    {:error, "ZERO_RESULTS"} = Maps.timezone({54.0661, -4.7404})
+  end
 end

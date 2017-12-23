@@ -1385,8 +1385,9 @@ defmodule GoogleMaps do
   ## Returns
 
     This function returns `{:ok, body}` if the request is successful, and
-    Google returns data. The returned body is a map that contains four root
-    elements:
+    Google returns data. It returns either `{:error, status}` or `{:error, status, error_message}`
+    when there is an error, depending if there's an error message or not.
+    The returned body is a map that contains four root elements:
 
     * `dstOffset` The time difference for summer time in seconds.
       This value will be zero if the time zone is not in daylight saving time
