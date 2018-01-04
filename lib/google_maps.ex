@@ -5,6 +5,10 @@ defmodule GoogleMaps do
   Unless otherwise noted, all the functions take the required Google
   parameters as its own  parameters, and all optional ones in an
   `options` keyword list.
+
+  The `options` keyword can also take special entry for `headers` and
+  `options`, which are passed to the underlying `Request`. See the
+  documentation of `HTTPoison` for details.
   """
   alias GoogleMaps.{Request, Response}
 
@@ -185,9 +189,11 @@ defmodule GoogleMaps do
       # Driving directions from Toronto, Ontario to Montreal, Quebec.
       iex> {:ok, result} = GoogleMaps.directions("Toronto", "Montreal")
       iex> [route] = result["routes"]
-      iex> route["bounds"]
-      %{"northeast" => %{"lat" => 45.5017123, "lng" => -73.5672184},
-      "southwest" => %{"lat" => 43.6533096, "lng" => -79.3834186}}
+      iex> match?(%{
+      ...>  "northeast" => %{"lat" => _, "lng" => _},
+      ...>  "southwest" => %{"lat" => _, "lng" => _}
+      ...> }, route["bounds"])
+      true
 
       # Directions for a scenic bicycle journey that avoids major highways.
       iex> {:ok, result} = GoogleMaps.directions("Toronto", "Montreal", [
@@ -195,9 +201,11 @@ defmodule GoogleMaps do
       ...>   mode: "bicycling"
       ...> ])
       iex> [route] = result["routes"]
-      iex> route["bounds"]
-      %{"northeast" => %{"lat" => 45.5017123, "lng" => -73.563532},
-      "southwest" => %{"lat" => 43.6532566, "lng" => -79.38303979999999}}
+      iex> match?(%{
+      ...>  "northeast" => %{"lat" => _, "lng" => _},
+      ...>  "southwest" => %{"lat" => _, "lng" => _}
+      ...> }, route["bounds"])
+      true
 
       # Transit directions from Brooklyn, New York to Queens, New York.
       # The request does not specify a `departure_time`, so the
@@ -890,10 +898,10 @@ defmodule GoogleMaps do
     Search for nearby places based on location and radius.
 
     The Google Places API Web Service allows you to query
-    for place information on a variety of categories, 
+    for place information on a variety of categories,
     such as: establishments, prominent points of interest,
     geographic locations, and more. You can search for places
-    either by proximity or a text string. A Place Search 
+    either by proximity or a text string. A Place Search
     returns a list of places along with summary information
     about each place; additional information is available
     via a Place Details query
@@ -901,7 +909,7 @@ defmodule GoogleMaps do
 
   ## Args:
   * `location` — The latitude/longitude around which to
-    retrieve place information. Can be in string format: 
+    retrieve place information. Can be in string format:
     `"123.456,-123.456"` or tuple format: `{123.456, -123.456}`
 
   * `radius` — Defines the distance (in meters) within which
@@ -924,10 +932,10 @@ defmodule GoogleMaps do
     Places service will attempt to use the native language of the
     domain from which the request is sent.
 
-  * `minprice` and `maxprice` - Restricts results to only those places 
-    within the specified price level. Valid values are in the range 
-    from `0` (most affordable) to `4` (most expensive), inclusive. 
-    The exact amount indicated by a specific value will vary from 
+  * `minprice` and `maxprice` - Restricts results to only those places
+    within the specified price level. Valid values are in the range
+    from `0` (most affordable) to `4` (most expensive), inclusive.
+    The exact amount indicated by a specific value will vary from
     region to region.
 
   * `opennow` - Returns only those places that are open for business at
@@ -941,17 +949,17 @@ defmodule GoogleMaps do
     as part of the same search string. We recommend using only the keyword parameter
     for all search terms.
 
-  * `type` - Restricts the results to places matching the specified type. 
-    Only one type may be specified (if more than one type is provided, 
-    all types following the first entry are ignored). 
+  * `type` - Restricts the results to places matching the specified type.
+    Only one type may be specified (if more than one type is provided,
+    all types following the first entry are ignored).
     See the [list of supported types](https://developers.google.com/places/web-service/supported_types).
 
-  * `rankby` - Specifies the order in which results are listed. 
+  * `rankby` - Specifies the order in which results are listed.
     Note that rankby must not be included if radius(described under Required parameters above) is specified.
     Possible values are:
 
     * `prominence` - (default). This option sorts results based on their importance.
-      Ranking will favor prominent places within the specified area. 
+      Ranking will favor prominent places within the specified area.
       Prominence can be affected by a place's ranking in Google's index,
       global popularity, and other factors.
 
@@ -971,10 +979,10 @@ defmodule GoogleMaps do
 
     * `html_attributons` contain a set of attributions about this listing which must be displayed to the user.
 
-    * `next_page_token` contains a token that can be used to return up to 20 additional results. 
+    * `next_page_token` contains a token that can be used to return up to 20 additional results.
 
-      A `next_page_token` will not be returned if there are no additional results to display. 
-      The maximum number of results that can be returned is 60. There is a short delay between when a 
+      A `next_page_token` will not be returned if there are no additional results to display.
+      The maximum number of results that can be returned is 60. There is a short delay between when a
       `next_page_token` is issued, and when it will become valid.
 
 
@@ -1007,7 +1015,7 @@ defmodule GoogleMaps do
       * `html_attributions[]` — contains any required attributions. This field will always be present, but may be empty.
 
     * `place_id` - a textual identifier that uniquely identifies a place. To retrieve information about the place,
-      pass this identifier in the placeId field of a Places API request. For more information about place IDs, 
+      pass this identifier in the placeId field of a Places API request. For more information about place IDs,
       see the [place ID overview](https://developers.google.com/places/web-service/place-id).
 
     * `scope` - Indicates the scope of the `place_id`. The possible values are:
@@ -1017,8 +1025,8 @@ defmodule GoogleMaps do
 
       * `GOOGLE`: The place ID is available to other applications and on Google Maps.
 
-    * `alt_ids` — An array of zero, one or more alternative place IDs for the place, 
-      with a scope related to each alternative ID. Note: This array may be empty or not present. 
+    * `alt_ids` — An array of zero, one or more alternative place IDs for the place,
+      with a scope related to each alternative ID. Note: This array may be empty or not present.
       If present, it contains the following fields:
 
       * `place_id` — The most likely reason for a place to have an alternative place ID is if your application
@@ -1043,7 +1051,7 @@ defmodule GoogleMaps do
 
     * `rating` contains the place's rating, from 1.0 to 5.0, based on aggregated user reviews
 
-    * `types` contains an array of feature types describing the given result. 
+    * `types` contains an array of feature types describing the given result.
       See the [list of supported types](https://developers.google.com/places/web-service/supported_types#table2).
 
     * `vicinity` contains a feature name of a nearby location. Often this feature refers to a street or
@@ -1061,15 +1069,15 @@ defmodule GoogleMaps do
       iex> error_message
       "The provided API key is invalid."
 
-      # Search for museums 500 meters around the White house 
+      # Search for museums 500 meters around the White house
       iex> {:ok, response} = GoogleMaps.place_nearby("38.8990252802915,-77.0351808197085", 500)
       iex> is_list(response["results"])
       true
-      
+
       # Search for museums by the white house but rank by distance
       iex> {:ok, response} = GoogleMaps.place_nearby(
       ...>  "38.8990252802915,-77.0351808197085",
-      ...>  500, 
+      ...>  500,
       ...>  [rankby: "distance",
       ...>  keyword: "museum"])
       iex>  Enum.any?(response["results"],
@@ -1128,9 +1136,9 @@ defmodule GoogleMaps do
       results. If more relevant results exist outside of the specified region,
       they may be included. When this parameter is used, the country name is
       omitted from the resulting `formatted_address` for results in the specified region.
-    
+
   ## Returns
-    
+
     This function returns `{:ok, body}` if the request is successful, and
     Google returns data. The returned body is a map that contains three root
     elements:
@@ -1149,7 +1157,7 @@ defmodule GoogleMaps do
       * `types[]` is an array indicating the type of the address component.
 
       * `long_name` is the full text description or name of the address component as returned by the Geocoder.
-      
+
       * `short_name` is an abbreviated textual name for the address component, if available.
         For example, an address component for the state of Alaska may have a `long_name` of
         "Alaska" and a `short_name` of "AK" using the 2-letter postal abbreviation.
@@ -1211,7 +1219,7 @@ defmodule GoogleMaps do
 
           * `day` a number from 0–6, corresponding to the days of the week, starting on Sunday. For example, 2 means Tuesday.
 
-          * `time` may contain a time of day in 24-hour hhmm format. Values are in the range 0000–2359. 
+          * `time` may contain a time of day in 24-hour hhmm format. Values are in the range 0000–2359.
             The `time` will be reported in the place’s time zone.
 
         * `close` may contain a pair of day and time objects describing when the place closes.
@@ -1452,9 +1460,11 @@ defmodule GoogleMaps do
       ...>   destination: "Universal Studios Hollywood"
       ...> ])
       iex> [route] = result["routes"]
-      iex> route["bounds"]
-      %{"northeast" => %{"lat" => 34.1373841, "lng" => -117.9220826},
-       "southwest" => %{"lat" => 33.8151707, "lng" => -118.3575456}}
+      iex> match?(%{
+      ...>  "northeast" => %{"lat" => _, "lng" => _},
+      ...>  "southwest" => %{"lat" => _, "lng" => _}
+      ...> }, route["bounds"])
+      true
 
       iex> {:ok, result} = GoogleMaps.get("place/autocomplete", [input: "Paris, France"])
       iex> Enum.count(result["predictions"]) > 0
@@ -1471,6 +1481,25 @@ defmodule GoogleMaps do
       iex> {:ok, result} = GoogleMaps.get("place/queryautocomplete", [input: "Pizza near Par"])
       iex> is_list(result["predictions"])
       true
+
+      # Passing request headers and/or options
+      iex> {:ok, result} = GoogleMaps.get("directions", [
+      ...>   origin: "Disneyland",
+      ...>   destination: "Universal Studios Hollywood",
+      ...>   headers: [{"Accept-Language", "vi"}]
+      ...> ])
+      iex> [route] = result["routes"]
+      iex> Regex.match?(~r(Dữ liệu bản đồ ©[\\d]{4} Google), route["copyrights"])
+      true
+
+      iex> {:error, error} = GoogleMaps.get("directions", [
+      ...>   origin: "Disneyland",
+      ...>   destination: "Universal Studios Hollywood",
+      ...>   headers: [{"Accept-Language", "vi"}],
+      ...>   options: [timeout: 0]
+      ...> ])
+      ...> error.reason
+      :connect_timeout
   """
   @spec get(String.t, options()) :: Response.t()
   def get(endpoint, params) do

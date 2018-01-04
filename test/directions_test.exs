@@ -39,7 +39,7 @@ defmodule DirectionsTest do
                     )
 
     [route | _rest] = result["routes"]
-    assert route["copyrights"] === "Dữ liệu bản đồ ©2017 Google"
+    assert route["copyrights"] =~ ~r(Dữ liệu bản đồ ©[\d]{4} Google)
     legs = route["legs"]
     assert Enum.count(legs) > 1
     assert String.contains?(Enum.at(legs, 1)["distance"]["text"], " km")
