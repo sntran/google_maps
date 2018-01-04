@@ -24,6 +24,7 @@ defmodule GoogleMaps.Request do
   end
 
   # HTTPoison callbacks.
+  def process_url("http" <> url), do: "http" <> url
   def process_url(url) do
     %{path: path, query: query} = URI.parse(url)
     "https://maps.googleapis.com/maps/api/#{path}/json?#{query}"

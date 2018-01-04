@@ -1500,6 +1500,15 @@ defmodule GoogleMaps do
       ...> ])
       ...> error.reason
       :connect_timeout
+
+      # Specifies full URL
+      iex> {:ok, %{"results" => [result]}} =
+      ...>   GoogleMaps.get("http://maps.googleapis.com/maps/api/geocode/json", [
+      ...>     address: "1600 Amphitheatre Parkway, Mountain View, CA",
+      ...>     key: nil
+      ...>   ])
+      iex> result["formatted_address"]
+      "Google Building 41, 1600 Amphitheatre Pkwy, Mountain View, CA 94043, USA"
   """
   @spec get(String.t, options()) :: Response.t()
   def get(endpoint, params) do
