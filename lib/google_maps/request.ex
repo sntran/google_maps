@@ -1,40 +1,37 @@
 defmodule GoogleMaps.Request do
   @moduledoc false
 
-  use HTTPoison.Base
+  @doc """
+  GET an endpoint with param keyword list
+  """
+  @spec get(String.t, keyword()) :: GoogleMaps.Response.t
+  def get(endpoint, params) do
+    {secure, params} = Keyword.pop(params, :secure, true)
+    {key, params} = Keyword.pop(params, :key, api_key())
+    {headers, params} = Keyword.pop(params, :headers, [])
+    {options, params} = Keyword.pop(params, :options, [])
+
+    query =
+      (if secure, do: Keyword.put(params, :key, key), else: params)
+      |> Enum.map(&transform_param/1)
+      |> URI.encode_query()
+
+    scheme = if secure, do: "https", else: "http"
+    url = "#{scheme}://maps.googleapis.com/maps/api/#{endpoint}/json"
+
+    requester().get("#{url}?#{query}", headers, options)
+  end
+
+  # Helpers
 
   defp api_key do
     Application.get_env(:google_maps, :api_key) ||
       System.get_env("GOOGLE_MAPS_API_KEY")
   end
 
-  @doc """
-  GET an endpoint with param keyword list
-  """
-  @spec get(String.t, keyword()) :: GoogleMaps.Response.t
-  def get(endpoint, params) do
-    {headers, params} = Keyword.pop(params, :headers, [])
-    {options, params} = Keyword.pop(params, :options, [])
-
-    params =
-      [key: api_key()]
-      |> Keyword.merge(params)
-      |> Enum.map(&transform_param/1)
-    get("#{endpoint}?#{URI.encode_query(params)}", headers, options)
+  defp requester do
+    Application.get_env(:google_maps, :requester)
   end
-
-  # HTTPoison callbacks.
-  def process_url("http" <> url), do: "http" <> url
-  def process_url(url) do
-    %{path: path, query: query} = URI.parse(url)
-    "https://maps.googleapis.com/maps/api/#{path}/json?#{query}"
-  end
-
-  def process_response_body(body) do
-    body |> Poison.decode!
-  end
-
-  # Helpers
 
   defp transform_param({type, {lat, lng}})
   when type in [:origin, :destination]

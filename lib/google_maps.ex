@@ -302,9 +302,9 @@ defmodule GoogleMaps do
       ["Place d'Armes, 78000 Versailles, France"]
       iex> [%{"elements" => [%{"distance" => distance}]}] = result["rows"]
       iex> distance["text"]
-      "23.8 km"
+      "23.3 km"
       iex> distance["value"]
-      23765
+      23286
   """
   @spec distance(address(), address(), options()) :: Response.t()
   def distance(origin, destination, options \\ []) do
@@ -1501,11 +1501,11 @@ defmodule GoogleMaps do
       ...> error.reason
       :connect_timeout
 
-      # Specifies full URL
+      # Uses insecure HTTP request (no API key will be used.)
       iex> {:ok, %{"results" => [result]}} =
-      ...>   GoogleMaps.get("http://maps.googleapis.com/maps/api/geocode/json", [
+      ...>   GoogleMaps.get("geocode", [
       ...>     address: "1600 Amphitheatre Parkway, Mountain View, CA",
-      ...>     key: nil
+      ...>     secure: false
       ...>   ])
       iex> result["formatted_address"]
       "Google Building 41, 1600 Amphitheatre Pkwy, Mountain View, CA 94043, USA"
