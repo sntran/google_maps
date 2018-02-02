@@ -305,17 +305,21 @@ defmodule GoogleMaps do
       "23.8 km"
       iex> distance["value"]
       23763
-      
 
       # Distance from coordinate A to coordinate B
       iex> {:ok, result2} = GoogleMaps.distance({27.5119772, -109.9409902}, {19.4156207, -99.171256517})
-      iex> result2["rows"] |> List.first() |> Map.fetch!("elements") |> List.first() |> Map.fetch!("distance") |> Map.fetch!("value")
+      iex> result2["rows"]
+      ...>   |> List.first()
+      ...>   |> Map.fetch!("elements") 
+      ...>   |> List.first() 
+      ...>   |> Map.fetch!("distance")
+      ...>   |> Map.fetch!("value")
       1633309
   """
   def distance(origin, destination, options \\ [])
 
   @spec distance(address(), address(), options()) :: Response.t()
-  def distance(origin, destination, options) when is_binary(destination) and is_binary(destination) do
+  def distance(origin, destination, options) when is_binary(origin) and is_binary(destination) do
     params = options
     |> Keyword.merge([origins: origin, destinations: destination])
 
@@ -324,10 +328,7 @@ defmodule GoogleMaps do
 
   @spec distance(coordinate(), coordinate(), options()) :: Response.t()
   def distance({lat1, lng1}, {lat2, lng2}, options) do
-    params = options
-    |> Keyword.merge([origins: "#{lat1},#{lng1}", destinations: "#{lat2},#{lng2}"])
-
-    GoogleMaps.get("distancematrix", params)
+    distance("#{lat1},#{lng1}", "#{lat2},#{lng2}", options)
   end
 
   @doc """
