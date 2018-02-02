@@ -297,21 +297,38 @@ defmodule GoogleMaps do
       # Distance from Eiffel Tower to Palace of Versailles.
       iex> {:ok, result} = GoogleMaps.distance("Place d'Armes, 78000 Versailles", "Champ de Mars, 5 Avenue Anatole")
       iex> result["destination_addresses"]
-      ["Champ de Mars, 2 Allée Adrienne Lecouvreur, 75007 Paris, France"]
+      ["Champ de Mars, 5 Avenue Anatole France, 75007 Paris, France"]
       iex> result["origin_addresses"]
       ["Place d'Armes, 78000 Versailles, France"]
       iex> [%{"elements" => [%{"distance" => distance}]}] = result["rows"]
       iex> distance["text"]
-      "23.3 km"
+      "23.8 km"
       iex> distance["value"]
-      23286
+      23763
+
+      # Distance from coordinate A to coordinate B
+      iex> {:ok, result2} = GoogleMaps.distance({27.5119772, -109.9409902}, {19.4156207, -99.171256517})
+      iex> result2["rows"]
+      ...>   |> List.first()
+      ...>   |> Map.fetch!("elements") 
+      ...>   |> List.first() 
+      ...>   |> Map.fetch!("distance")
+      ...>   |> Map.fetch!("value")
+      1633309
   """
+  def distance(origin, destination, options \\ [])
+
   @spec distance(address(), address(), options()) :: Response.t()
-  def distance(origin, destination, options \\ []) do
+  def distance(origin, destination, options) when is_binary(origin) and is_binary(destination) do
     params = options
     |> Keyword.merge([origins: origin, destinations: destination])
 
     GoogleMaps.get("distancematrix", params)
+  end
+
+  @spec distance(coordinate(), coordinate(), options()) :: Response.t()
+  def distance({lat1, lng1}, {lat2, lng2}, options) do
+    distance("#{lat1},#{lng1}", "#{lat2},#{lng2}", options)
   end
 
   @doc """
