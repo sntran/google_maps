@@ -296,25 +296,25 @@ defmodule GoogleMaps do
 
       # Distance from Eiffel Tower to Palace of Versailles.
       iex> {:ok, result} = GoogleMaps.distance("Place d'Armes, 78000 Versailles", "Champ de Mars, 5 Avenue Anatole")
-      iex> result["destination_addresses"]
-      ["Champ de Mars, 5 Avenue Anatole France, 75007 Paris, France"]
-      iex> result["origin_addresses"]
-      ["Place d'Armes, 78000 Versailles, France"]
-      iex> [%{"elements" => [%{"distance" => distance}]}] = result["rows"]
-      iex> distance["text"]
-      "23.8 km"
-      iex> distance["value"]
-      23763
+      iex> match?(%{
+      ...>   "destination_addresses" => _,
+      ...>   "origin_addresses" => _,
+      ...>   "rows" => [
+      ...>     %{"elements" => [%{"distance" => %{"text" => _, "value" => _}}]}
+      ...>   ]
+      ...> }, result)
+      true
 
       # Distance from coordinate A to coordinate B
       iex> {:ok, result2} = GoogleMaps.distance({27.5119772, -109.9409902}, {19.4156207, -99.171256517})
-      iex> result2["rows"]
-      ...>   |> List.first()
-      ...>   |> Map.fetch!("elements") 
-      ...>   |> List.first() 
-      ...>   |> Map.fetch!("distance")
-      ...>   |> Map.fetch!("value")
-      1633309
+      iex> match?(%{
+      ...>   "destination_addresses" => _,
+      ...>   "origin_addresses" => _,
+      ...>   "rows" => [
+      ...>     %{"elements" => [%{"distance" => %{"text" => _, "value" => _}}]}
+      ...>   ]
+      ...> }, result2)
+      true
   """
   def distance(origin, destination, options \\ [])
 
@@ -527,27 +527,35 @@ defmodule GoogleMaps do
 
       iex> {:ok, %{"results" => [result]}} =
       ...>  GoogleMaps.geocode("1600 Amphitheatre Parkway, Mountain View, CA")
-      iex> result["formatted_address"]
-      "Google Building 41, 1600 Amphitheatre Pkwy, Mountain View, CA 94043, USA"
-      iex> result["geometry"]["location"]["lat"]
-      37.4224082
-      iex> result["geometry"]["location"]["lng"]
-      -122.0856086
+      iex> match?(%{
+      ...>   "formatted_address" => _,
+      ...>   "geometry" => %{"location" => %{"lat" => _, "lng" => _}}
+      ...> }, result)
+      true
 
       iex> {:ok, %{"results" => [result|_]}} =
       ...>  GoogleMaps.geocode({40.714224,-73.961452})
-      iex> result["formatted_address"]
-      "277 Bedford Ave, Brooklyn, NY 11211, USA"
+      iex> match?(%{
+      ...>   "formatted_address" => _,
+      ...>   "geometry" => %{"location" => %{"lat" => _, "lng" => _}}
+      ...> }, result)
+      true
 
       iex> {:ok, %{"results" => [result|_]}} =
       ...>  GoogleMaps.geocode("place_id:ChIJd8BlQ2BZwokRAFUEcm_qrcA")
-      iex> result["formatted_address"]
-      "277 Bedford Ave, Brooklyn, NY 11211, USA"
+      iex> match?(%{
+      ...>   "formatted_address" => _,
+      ...>   "geometry" => %{"location" => %{"lat" => _, "lng" => _}}
+      ...> }, result)
+      true
 
       iex> {:ok, %{"results" => [result|_]}} =
       ...>  GoogleMaps.geocode({:place_id, "ChIJd8BlQ2BZwokRAFUEcm_qrcA"})
-      iex> result["formatted_address"]
-      "277 Bedford Ave, Brooklyn, NY 11211, USA"
+      iex> match?(%{
+      ...>   "formatted_address" => _,
+      ...>   "geometry" => %{"location" => %{"lat" => _, "lng" => _}}
+      ...> }, result)
+      true
   """
   @spec geocode(map() | String.t | coordinate() | place_id, options()) :: Response.t()
   def geocode(input, options \\ [])
