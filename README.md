@@ -2,6 +2,10 @@
 
 Elixir wrapper around Google Maps APIs
 
+[![Build Status](https://img.shields.io/travis/sntran/ex_maps/master.svg)](https://travis-ci.org/sntran/ex_maps)
+[![Hex Version](https://img.shields.io/hexpm/v/google_maps.svg)](https://hex.pm/packages/ex_maps)
+[![License](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
+
 ## Services
 
 - [x] [Directions](https://developers.google.com/maps/documentation/directions/intro) - Directions between multiple locations.
@@ -36,7 +40,7 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 
 ```elixir
 def deps do
-  [{:google_maps, "~> 0.8"}]
+  [{:google_maps, "~> 0.9"}]
 end
 ```
 
