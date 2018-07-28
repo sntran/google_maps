@@ -42,8 +42,8 @@ defmodule GoogleMaps.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:poison, "~> 2.0 or ~> 3.0"},
-      {:httpoison, "~> 1.0"},
+      {:httpoison, "~> 1.2"},
+      {:jason, "~> 1.1"},
       {:ex_doc, ">= 0.0.0", only: :dev}
     ]
   end

@@ -9,7 +9,7 @@ defmodule GoogleMaps.Response do
 
   def wrap({:error, error}), do: {:error, error}
   def wrap({:ok, %{body: body} = response}) when is_binary(body) do
-    wrap({:ok, %{response | body: Poison.decode!(body)}})
+    wrap({:ok, %{response | body: Jason.decode!(body)}})
   end
   def wrap({:ok, %{body: %{"status" => "OK"} = body}}), do: {:ok, body}
   def wrap({:ok, %{body: %{"status" => status, "error_message" => error_message}}}), do: {:error, status, error_message}
