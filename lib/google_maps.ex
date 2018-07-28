@@ -1532,8 +1532,9 @@ defmodule GoogleMaps do
       ...>     address: "1600 Amphitheatre Parkway, Mountain View, CA",
       ...>     secure: false
       ...>   ])
-      iex> result["formatted_address"]
-      "Google Building 41, 1600 Amphitheatre Pkwy, Mountain View, CA 94043, USA"
+      iex> result["formatted_address"] =~ "1600 Amphitheatre Pkwy, Mountain View, CA 94043, USA"
+      true
+
   """
   @spec get(String.t, options()) :: Response.t()
   def get(endpoint, params) do

@@ -15,6 +15,6 @@ defmodule TimezoneTest do
   end
 
   test "when there is no result" do
-    {:error, "ZERO_RESULTS"} = Maps.timezone({54.0661, -4.7404})
+    {:error, "ZERO_RESULTS"} = Maps.timezone({43.140489, 131.858103})
   end
 end

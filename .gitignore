@@ -17,6 +17,7 @@ erl_crash.dump
 *.ez
 
 .env
+.elixir_ls
 
 # OS stuffs
 .DS_Store
