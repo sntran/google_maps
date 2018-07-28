@@ -332,6 +332,137 @@ defmodule GoogleMaps do
   end
 
   @doc """
+  Queries locations on the earth for elevation data.
+
+  ## Args:
+    * `coordinates` — Either a single coordinate or multiple coordinates passed
+      as an array from which to return elevation data.
+
+  ## Options:
+    * `samples` - The number of sample points along a path for which to return
+      elevation data. The samples parameter divides the given path into an
+      ordered set of equidistant points along the path.
+
+  By default, if `samples` option is not set, the function requests for elevation
+  data for each specific coordinates passed in as argument. Otherwise, elevation
+  requests are instead sampled along the given path.
+
+  ## Returns
+
+    This function returns `{:ok, body}` if the request is successful, and
+    Google returns data. The returned body is a map contains two root
+    elements:
+      * `status` contains metadata on the request.
+      * `results` contains an array of elevation result with the following:
+        * `location` (containing `lat` and `lng`) of the coordinate for which
+          elevation data is being computed.
+        * `elevation` indicating the elevation of the coordinate in meters.
+        * `resolution` indicating the maximum distance between data points from
+          which the elevation was interpolated, in meters. This property will be
+          missing if the resolution is not known. Note that elevation data
+          becomes more coarse (larger resolution values) when multiple points are
+          passed. To obtain the most accurate elevation value for a point, it
+          should be queried independently.
+
+    It returns `{:error, error}` when there is HTTP errors, or
+    `{:error, status, error_message}` when the request is successful, but Google
+    returns status codes different than "OK", i.e.:
+    * "INVALID_REQUEST"
+    * "OVER_DAILY_LIMIT"
+    * "OVER_QUERY_LIMIT"
+    * "REQUEST_DENIED"
+    * "UNKNOWN_ERROR"
+
+  ## Examples
+
+      # Requests elevation for Denver, Colorado, the "Mile High City".
+      iex> {:ok, %{"results" => [result|_]}} =
+      ...>   GoogleMaps.elevation("39.7391536,-104.9847034")
+      iex> match?(%{
+      ...>   "elevation" => 1608.637939453125,
+      ...>   "location" => %{
+      ...>     "lat" => 39.73915360,
+      ...>     "lng" => -104.98470340
+      ...>   },
+      ...>   "resolution" => 4.771975994110107
+      ...> }, result)
+      true
+
+      # Requests elevation for Denver, CO and for Death Valley, CA.
+      iex> {:ok, %{"results" => results}} =
+      ...>   GoogleMaps.elevation(["39.7391536,-104.9847034", "36.455556,-116.866667"])
+      iex> match?([%{
+      ...>   "elevation" => _,
+      ...>   "location" => %{
+      ...>     "lat" => 39.73915360,
+      ...>     "lng" => -104.98470340
+      ...>   },
+      ...>   "resolution" => 4.771975994110107
+      ...> }, %{
+      ...>   "elevation" => _,
+      ...>   "location" => %{
+      ...>     "lat" => 36.4555560,
+      ...>     "lng" => -116.8666670
+      ...>   },
+      ...>   "resolution" => 19.08790397644043
+      ...> }], results)
+      true
+
+      # Requests for elevation data along a straight line path from Mt. Whitney,
+      # CA to Badwater, CA, the highest and lowest points in the continental
+      # United States. We ask for three samples, so that will include the two
+      # endpoints and the halfway point.
+      iex> {:ok, %{"results" => results}} =
+      ...>   GoogleMaps.elevation(["36.578581,-118.291994", "36.23998,-116.8317"], samples: 3)
+      iex> match?([%{
+      ...>   "elevation" => _,
+      ...>   "location" => %{
+      ...>     "lat" => 36.578581,
+      ...>     "lng" => -118.291994
+      ...>   },
+      ...>   "resolution" => 19.08790397644043
+      ...> }, %{
+      ...>   "elevation" => _,
+      ...>   "location" => %{
+      ...>     "lat" => 36.41150292110937,
+      ...>     "lng" => -117.5602557414867
+      ...>   },
+      ...>   "resolution" => 9.543951988220215
+      ...> }, %{
+      ...>   "elevation" => _,
+      ...>   "location" => %{
+      ...>     "lat" => 36.23998,
+      ...>     "lng" => -116.8317
+      ...>   },
+      ...>   "resolution" => 9.543951988220215
+      ...> }], results)
+      true
+
+  """
+  @spec elevation([coordinate()], options()) :: Response.t()
+  def elevation(coordinates, options \\ [])
+
+  def elevation(coordinates, options) when is_list(coordinates) do
+    coordinates = coordinates
+    |> Enum.map(&(coordinate(&1)))
+    |> Enum.join("|")
+
+    params = case options[:samples] do
+      # Use positional request.
+      nil -> [locations: coordinates]
+      # When `samples` param is set, use sampled path request.
+      samples -> [path: coordinates, samples: samples]
+    end
+
+    params = Keyword.merge(options, params)
+    GoogleMaps.get("elevation", params)
+  end
+
+  def elevation(coordinate, options) do
+    elevation([coordinate], options)
+  end
+
+  @doc """
   Converts between addresses and geographic coordinates.
 
   **Geocoding** is the process of converting addresses (like "1600
@@ -1449,15 +1580,12 @@ defmodule GoogleMaps do
       "Asia/Saigon"
   """
   @spec timezone(coordinate(), options()) :: Response.t()
-  def timezone(input, options \\ [])
-
-  def timezone(location, options) when is_binary(location) do
-    params = Keyword.merge(options, [location: location, timestamp: :os.system_time(:seconds)])
+  def timezone(location, options \\ []) do
+    params = Keyword.merge(options, [
+      location: coordinate(location),
+      timestamp: :os.system_time(:seconds)
+    ])
     GoogleMaps.get("timezone", params)
-  end
-
-  def timezone({lat, lng}, options) when is_number(lat) and is_number(lng) do
-    timezone("#{lat},#{lng}", options)
   end
 
   @doc """
@@ -1541,4 +1669,8 @@ defmodule GoogleMaps do
     Request.get(endpoint, params)
     |> Response.wrap
   end
+
+  @spec coordinate(coordinate()) :: binary()
+  defp coordinate({lat, lng}) when is_number(lat) and is_number(lng), do: "#{lat},#{lng}"
+  defp coordinate(coordinate) when is_binary(coordinate), do: coordinate
 end
