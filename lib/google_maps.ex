@@ -1654,7 +1654,7 @@ defmodule GoogleMaps do
       ...> error.reason
       :connect_timeout
 
-      # Uses insecure HTTP request (no API key will be used.)
+      # Still uses secure HTTPS request because Google requires.
       iex> {:ok, %{"results" => [result]}} =
       ...>   GoogleMaps.get("geocode", [
       ...>     address: "1600 Amphitheatre Parkway, Mountain View, CA",

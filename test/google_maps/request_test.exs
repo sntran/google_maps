@@ -1,6 +1,7 @@
 defmodule GoogleMaps.RequestTest do
   use ExUnit.Case, async: false
   alias GoogleMaps.Request, as: Request
+  import ExUnit.CaptureIO
 
   defmodule MockRequest do
     def get(url, headers, options) do
@@ -46,14 +47,18 @@ defmodule GoogleMaps.RequestTest do
     assert options === params[:options]
   end
 
-  test "support insecure request without API key" do
+  test "deprecates `secure` param and still requests over SSL" do
     params = [secure: false, key: "key", param: "param"]
     {:ok, %{body: url}} = Request.get("foobar", params)
     assert %{
-      scheme: "http",
+      scheme: "https",
       authority: "maps.googleapis.com",
       path: "/maps/api/foobar/json",
-      query: "param=param"
+      query: "key=key&param=param"
     } = URI.parse(url)
+
+    assert capture_io(fn ->
+      Request.get("foobar", params)
+    end) =~ "`secure` param is deprecated"
   end
 end
