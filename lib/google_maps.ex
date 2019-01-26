@@ -1652,7 +1652,7 @@ defmodule GoogleMaps do
       ...>   options: [timeout: 0]
       ...> ])
       ...> error.reason
-      :connect_timeout
+      :checkout_timeout
 
       # Still uses secure HTTPS request because Google requires.
       iex> {:ok, %{"results" => [result]}} =
