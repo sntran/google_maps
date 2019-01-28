@@ -36,7 +36,7 @@ defmodule GoogleMaps.RequestTest do
   end
 
   test "supports headers" do
-    params = [headers: [{"Accept-Language", "vi"}]]
+    params = [headers: %{"Accept-Language" => "vi"}]
     {:ok, %{headers: headers}} = Request.get("foobar", params)
     assert headers === params[:headers]
   end

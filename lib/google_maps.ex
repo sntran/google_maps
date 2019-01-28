@@ -1523,6 +1523,97 @@ defmodule GoogleMaps do
     place_details({:place_id, place_id}, options)
   end
 
+  @doc """
+    Retrieve a photo for a place based on a photo reference.
+
+    The Place Photo service gives you access to the millions of photos stored
+    in the Places database. When you get place information using a Place Details
+    request, photo references will be returned for relevant photographic content.
+    The Nearby Search and Text Search requests also return a single photo reference
+    per place, when relevant. Using the Photo service you can then access the
+    referenced photos and resize the image to the optimal size for your application.
+
+  ## Args:
+  * `photo_reference` — A string identifier that uniquely identifies a photo.
+    Photo references are returned from either a Place Search or Place Details request.
+
+  * `max_width` and `max_height` — Specify the maximum desired width or height, in pixels,
+    of the image returned by the Place Photos service. If the image is smaller than the
+    values specified, the original image will be returned. If the image is larger in
+    either dimension, it will be scaled to match the smaller of the two dimensions,
+    restricted to its original aspect ratio. Both the maxheight and maxwidth properties
+    accept an integer between 1 and 1600. **Default to 1600.**
+
+  ## Options:
+    While no optional parameters for Place Photos exist at the time of writing, the
+    options keyword list supports the `key` parameter in case an explicit API key
+    is to be supplied.
+
+  ## Returns
+
+    This function returns `{:ok, body}` if the request is successful.
+    The returned body is a binary containing jpeg image data.
+
+    If the API key is invalid or the request has exceeded your quota, the function
+    returns `{:error, 403}`.
+
+    Otherwise, if the request is invalid, the return value will be `{:error, 400}`.
+    This likely indicates an incorrect photo reference.
+
+  ## Examples
+
+      # Request with an invalid API key, max_width of 500
+      iex> photo_reference = "CnRtAAAATLZNl354RwP_9UKbQ_5Psy40texXePv4oAlgP4qNEkdIrkyse7rPXYGd9D_Uj1rVsQdWT4oRz4QrYAJNpFX7rzqqMlZw2h2E2y5IKMUZ7ouD_SlcHxYq1yL4KbKUv3qtWgTK0A6QbGh87GB3sscrHRIQiG2RrmU_jF4tENr9wGS_YxoUSSDrYjWmrNfeEHSGSc3FyhNLlBU"
+      iex> GoogleMaps.place_photo(photo_reference, 500, key: "invalid key")
+      {:error, 403}
+
+      # Request with an invalid photo reference, max_width of 500
+      iex> GoogleMaps.place_photo("invalid reference", 500)
+      {:error, 400}
+
+      # Request a photo with default maximum width/height of 1600
+      iex> photo_reference = "CnRtAAAATLZNl354RwP_9UKbQ_5Psy40texXePv4oAlgP4qNEkdIrkyse7rPXYGd9D_Uj1rVsQdWT4oRz4QrYAJNpFX7rzqqMlZw2h2E2y5IKMUZ7ouD_SlcHxYq1yL4KbKUv3qtWgTK0A6QbGh87GB3sscrHRIQiG2RrmU_jF4tENr9wGS_YxoUSSDrYjWmrNfeEHSGSc3FyhNLlBU"
+      iex> {:ok, response} = GoogleMaps.place_photo(photo_reference)
+      iex> is_binary(response)
+      true
+
+      # Request a photo with a maximum height of 100
+      iex> photo_reference = "CnRtAAAATLZNl354RwP_9UKbQ_5Psy40texXePv4oAlgP4qNEkdIrkyse7rPXYGd9D_Uj1rVsQdWT4oRz4QrYAJNpFX7rzqqMlZw2h2E2y5IKMUZ7ouD_SlcHxYq1yL4KbKUv3qtWgTK0A6QbGh87GB3sscrHRIQiG2RrmU_jF4tENr9wGS_YxoUSSDrYjWmrNfeEHSGSc3FyhNLlBU"
+      iex> {:ok, response} = GoogleMaps.place_photo(photo_reference, nil, 100)
+      iex> is_binary(response)
+      true
+  """
+  @spec place_photo(String.t) :: Response.t()
+  @spec place_photo(String.t, integer() | nil) :: Response.t()
+  @spec place_photo(String.t, integer() | nil, options()) :: Response.t()
+  @spec place_photo(String.t, integer() | nil, integer() | nil) :: Response.t()
+  @spec place_photo(String.t, integer() | nil, integer() | nil, options()) :: Response.t()
+  def place_photo(photo_reference, max_width \\ nil) do
+    place_photo(photo_reference, max_width, nil, [])
+  end
+
+  def place_photo(photo_reference, max_width, opts) when is_list(opts) do
+    place_photo(photo_reference, max_width, nil, opts)
+  end
+
+  def place_photo(photo_reference, max_width, max_height) do
+    place_photo(photo_reference, max_width, max_height, [])
+  end
+
+  def place_photo(photo_reference, max_width, max_height, opts)
+  when is_binary(photo_reference)
+  and is_nil(max_width) or (is_integer(max_width) and max_width >= 1 and max_width <= 1600)
+  and is_nil(max_height) or (is_integer(max_height) and max_height >=1 and max_height <= 1600)
+  and is_list(opts)
+  do
+    params = Keyword.merge(opts, [photoreference: photo_reference,
+                                  maxwidth: max_width || 1600,
+                                  maxheight: max_height || 1600,
+                                  output: "",
+                                  options: [follow_redirect: true]])
+
+    GoogleMaps.get("place/photo", params)
+  end
 
   @doc """
     A Timezone request returns timezone information for the given location.
