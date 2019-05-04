@@ -924,24 +924,24 @@ defmodule GoogleMaps do
       ...>   location: "37.76999,-122.44696",
       ...>   radius: 500
       ...> ])
-      iex> Enum.count(result["predictions"])
-      5
+      iex> Enum.count(result["predictions"]) > 1
+      true
 
       # Addresses containing "Vict" with results in French:
       iex> {:ok, result} = GoogleMaps.place_autocomplete("Vict", [
       ...>   types: "geocode",
       ...>   language: "fr"
       ...> ])
-      iex> Enum.count(result["predictions"])
-      5
+      iex> Enum.count(result["predictions"]) > 1
+      true
 
       # Cities containing "Vict" with results in Brazilian Portuguese:
       iex> {:ok, result} = GoogleMaps.place_autocomplete("Vict", [
       ...>   types: "(cities)",
       ...>   language: "pt_BR"
       ...> ])
-      iex> Enum.count(result["predictions"])
-      5
+      iex> Enum.count(result["predictions"]) > 1
+      true
   """
   @spec place_autocomplete(String.t, options()) :: Response.t()
   def place_autocomplete(input, options \\ []) do
