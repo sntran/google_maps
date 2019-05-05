@@ -1606,11 +1606,13 @@ defmodule GoogleMaps do
   and is_nil(max_height) or (is_integer(max_height) and max_height >=1 and max_height <= 1600)
   and is_list(opts)
   do
-    params = Keyword.merge(opts, [photoreference: photo_reference,
-                                  maxwidth: max_width || 1600,
-                                  maxheight: max_height || 1600,
-                                  output: "",
-                                  options: [follow_redirect: true]])
+    params = Keyword.merge(opts, [
+      photoreference: photo_reference,
+      maxwidth: max_width || 1600,
+      maxheight: max_height || 1600,
+      output: "",
+      options: [follow_redirect: true]
+    ])
 
     GoogleMaps.get("place/photo", params)
   end
@@ -1742,8 +1744,8 @@ defmodule GoogleMaps do
       ...>   headers: [{"Accept-Language", "vi"}],
       ...>   options: [timeout: 0]
       ...> ])
-      ...> error.reason
-      :checkout_timeout
+      iex> error
+      "timeout"
 
       # Still uses secure HTTPS request because Google requires.
       iex> {:ok, %{"results" => [result]}} =

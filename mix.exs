@@ -26,8 +26,8 @@ defmodule GoogleMaps.Mixfile do
   # Type "mix help compile.app" for more information
   def application do
     [
-      applications: [:logger, :httpoison],
-      env: [requester: HTTPoison]
+      applications: [:logger],
+      env: [requester: GoogleMaps.HTTP]
     ]
   end
 
@@ -42,7 +42,8 @@ defmodule GoogleMaps.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:httpoison, "~> 1.5"},
+      {:castore, "~> 0.1.0"},
+      {:mint, "~> 0.2.0"},
       {:jason, "~> 1.1"},
       {:ex_doc, ">= 0.0.0", only: :dev}
     ]
