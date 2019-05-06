@@ -80,9 +80,9 @@ defmodule GoogleMaps.HTTP do
         state = put_in(state.requests[request_ref], request)
         {:noreply, state}
 
-      {:error, conn, reason} ->
+      {:error, conn, error} ->
         state = put_in(state.conn, conn)
-        {:reply, {:error, reason}, state}
+        {:reply, {:error, Exception.message(error)}, state}
     end
   end
 
@@ -98,10 +98,10 @@ defmodule GoogleMaps.HTTP do
         state = Enum.reduce(responses, state, &process_response/2)
         {:noreply, state}
 
-      {:error, conn, reason, responses} ->
+      {:error, conn, error, responses} ->
         state = put_in(state.conn, conn)
         state = Enum.reduce(responses, state, &process_response/2)
-        {:reply, {:error, reason}, state}
+        {:reply, {:error, Exception.message(error)}, state}
     end
   end
 
