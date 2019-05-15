@@ -4,7 +4,7 @@ defmodule GoogleMaps.Request do
   @doc """
   GET an endpoint with param keyword list
   """
-  @spec get(String.t, keyword()) :: GoogleMaps.Response.t
+  @spec get(String.t(), keyword()) :: GoogleMaps.Response.t()
   def get(endpoint, params) do
     {secure, params} = Keyword.pop(params, :secure)
     {output, params} = Keyword.pop(params, :output, "json")
@@ -13,15 +13,19 @@ defmodule GoogleMaps.Request do
     {options, params} = Keyword.pop(params, :options, [])
 
     unless is_nil(secure) do
-      IO.puts "`secure` param is deprecated since Google requires request over SSL with API key."
+      IO.puts("`secure` param is deprecated since Google requires request over SSL with API key.")
     end
 
-    query = params
+    query =
+      params
       |> Keyword.put(:key, key)
       |> Enum.map(&transform_param/1)
       |> URI.encode_query()
 
-    url = Path.join("https://maps.googleapis.com/maps/api/#{endpoint}", output)
+    url =
+      (Application.get_env(:google_maps, :url, "https://maps.googleapis.com/maps/api/") <>
+         endpoint)
+      |> Path.join(output)
 
     requester().get("#{url}?#{query}", headers, options)
     |> format_headers()
@@ -39,16 +43,14 @@ defmodule GoogleMaps.Request do
   end
 
   defp transform_param({type, {lat, lng}})
-  when type in [:origin, :destination]
-  and is_number(lat)
-  and is_number(lng)
-  do
+       when type in [:origin, :destination] and
+              is_number(lat) and
+              is_number(lng) do
     {type, "#{lat},#{lng}"}
   end
 
   defp transform_param({type, {:place_id, place_id}})
-  when type in [:origin, :destination]
-  do
+       when type in [:origin, :destination] do
     {type, "place_id:#{place_id}"}
   end
 
@@ -57,7 +59,7 @@ defmodule GoogleMaps.Request do
   end
 
   defp transform_param({:waypoints, waypoints})
-  when is_list(waypoints) do
+       when is_list(waypoints) do
     transform_param({:waypoints, Enum.join(waypoints, "|")})
   end
 
