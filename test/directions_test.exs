@@ -18,25 +18,26 @@ defmodule DirectionsTest do
   end
 
   test "directions between two lat/lng tupples" do
-    {:ok, result} = Maps.directions({8.6069305,104.7196242}, {23.363697,105.3140251})
+    {:ok, result} = Maps.directions({8.6069305, 104.7196242}, {23.363697, 105.3140251})
     assert result["geocoded_waypoints"]
     assert_single_route(result)
   end
 
   test "directions with optional parameters" do
-    {:ok, result} = Maps.directions("8.6069305,104.7196242", "23.363697,105.3140251",
-                      mode: "driving",
-                      waypoints: [
-                        "10.402504,107.056638",
-                        "10.8976049,108.1020933",
-                        "11.9039022,108.3806826",
-                        "12.2595881,109.1707299",
-                        "16.0470775,108.1712141"
-                      ],
-                      alternatives: true,
-                      language: "vi",
-                      units: "metric"
-                    )
+    {:ok, result} =
+      Maps.directions("8.6069305,104.7196242", "23.363697,105.3140251",
+        mode: "driving",
+        waypoints: [
+          "10.402504,107.056638",
+          "10.8976049,108.1020933",
+          "11.9039022,108.3806826",
+          "12.2595881,109.1707299",
+          "16.0470775,108.1712141"
+        ],
+        alternatives: true,
+        language: "vi",
+        units: "metric"
+      )
 
     [route | _rest] = result["routes"]
     assert route["copyrights"] =~ ~r(Dữ liệu bản đồ ©[\d]{4} Google)
