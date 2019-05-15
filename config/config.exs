@@ -10,7 +10,7 @@ use Mix.Config
 
 # You can configure for your application as:
 #
-#     config :google_maps, key: :value
+#     config :google_maps, key: :value, url: "https://maps.googleapis.com/maps/api/"
 #
 # And access this configuration in your application as:
 #
