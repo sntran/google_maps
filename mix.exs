@@ -9,6 +9,7 @@ defmodule GoogleMaps.Mixfile do
       description: "A Google Maps API in Elixir",
       version: @version,
       elixir: "~> 1.3",
+      elixirc_paths: elixirc_paths(Mix.env()),
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -31,6 +32,10 @@ defmodule GoogleMaps.Mixfile do
       env: [requester: GoogleMaps.HTTP]
     ]
   end
+
+  # Specifies which paths to compile per environment.
+  defp elixirc_paths(:test), do: ["lib", "test"]
+  defp elixirc_paths(_), do: ["lib"]
 
   # Dependencies can be Hex packages:
   #

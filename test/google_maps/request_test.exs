@@ -13,20 +13,21 @@ defmodule GoogleMaps.RequestTest do
     requester = Application.get_env(:google_maps, :requester)
     Application.put_env(:google_maps, :requester, MockRequest)
 
-    on_exit fn ->
+    on_exit(fn ->
       Application.put_env(:google_maps, :requester, requester)
-    end
+    end)
 
     :ok
   end
 
   test "construct full URL from endpoint" do
     {:ok, %{body: url}} = Request.get("foobar", [])
+
     assert %{
-      scheme: "https",
-      authority: "maps.googleapis.com",
-      path: "/maps/api/foobar/json"
-    } = URI.parse(url)
+             scheme: "http",
+             host: "127.0.0.1",
+             path: "/google/foobar/json"
+           } = URI.parse(url)
   end
 
   test "convert params to query" do
@@ -50,15 +51,16 @@ defmodule GoogleMaps.RequestTest do
   test "deprecates `secure` param and still requests over SSL" do
     params = [secure: false, key: "key", param: "param"]
     {:ok, %{body: url}} = Request.get("foobar", params)
+
     assert %{
-      scheme: "https",
-      authority: "maps.googleapis.com",
-      path: "/maps/api/foobar/json",
-      query: "key=key&param=param"
-    } = URI.parse(url)
+             scheme: "http",
+             host: "127.0.0.1",
+             path: "/google/foobar/json",
+             query: "key=key&param=param"
+           } = URI.parse(url)
 
     assert capture_io(fn ->
-      Request.get("foobar", params)
-    end) =~ "`secure` param is deprecated"
+             Request.get("foobar", params)
+           end) =~ "`secure` param is deprecated"
   end
 end
