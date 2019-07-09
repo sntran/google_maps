@@ -23,9 +23,9 @@ defmodule GoogleMaps.RequestTest do
   test "construct full URL from endpoint" do
     {:ok, %{body: url}} = Request.get("foobar", [])
     assert %{
-      scheme: "https",
-      authority: "maps.googleapis.com",
-      path: "/maps/api/foobar/json"
+      scheme: "http",
+      host: "127.0.0.1",
+      path: "/google/foobar/json"
     } = URI.parse(url)
   end
 
@@ -51,9 +51,9 @@ defmodule GoogleMaps.RequestTest do
     params = [secure: false, key: "key", param: "param"]
     {:ok, %{body: url}} = Request.get("foobar", params)
     assert %{
-      scheme: "https",
-      authority: "maps.googleapis.com",
-      path: "/maps/api/foobar/json",
+      scheme: "http",
+      host: "127.0.0.1",
+      path: "/google/foobar/json",
       query: "key=key&param=param"
     } = URI.parse(url)
 
