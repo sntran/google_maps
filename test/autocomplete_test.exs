@@ -43,7 +43,7 @@ defmodule AutocompleteTest do
       |> Plug.Conn.resp(400, Jason.encode!(%{"predictions" => [], "status" => "ZERO_RESULTS"}))
     end)
 
-    assert {:error, 400} == GoogleMaps.place_autocomplete("564124356")
+    assert {:error, "ZERO_RESULTS"} == GoogleMaps.place_autocomplete("564124356")
   end
 
   defp zipcode_body() do
