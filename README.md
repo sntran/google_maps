@@ -2,7 +2,8 @@
 
 Elixir wrapper around Google Maps APIs
 
-[![Build Status](https://img.shields.io/travis/sntran/ex_maps/master.svg)](https://travis-ci.org/sntran/ex_maps)
+[![Actions Status](https://github.com/sntran/google_maps/workflows/Elixir%20CI/badge.svg)](https://github.com/sntran/google_maps/actions)
+[![Build Status](https://img.shields.io/travis/sntran/google_maps/master.svg)](https://travis-ci.org/sntran/google_maps)
 [![Hex Version](https://img.shields.io/hexpm/v/google_maps.svg)](https://hex.pm/packages/google_maps)
 [![License](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
 
