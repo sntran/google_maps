@@ -58,7 +58,8 @@ end
 
 ```elixir
 config :google_maps,
-  api_key: "YOUR API KEY HERE"
+  api_key: "YOUR API KEY HERE",
+  requester: HTTPoison # default http client
 ```
 
 Or you can use `GOOGLE_MAPS_API_KEY` system environment variable when running in `iex`.
