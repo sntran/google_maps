@@ -326,10 +326,20 @@ defmodule GoogleMaps do
     GoogleMaps.get("distancematrix", params)
   end
 
-  @spec distance(coordinate(), coordinate(), options()) :: Response.t()
-  def distance({lat1, lng1}, {lat2, lng2}, options) do
-    distance("#{lat1},#{lng1}", "#{lat2},#{lng2}", options)
+  @spec distance([coordinate()], [coordinate()], options()) :: Response.t()
+  def distance(origins, destinations, options) do
+    [origins, destinations]  =
+      [origins, destinations]
+      |> Enum.map(fn coordinates ->
+        [coordinates]
+        |> List.flatten
+        |> Enum.map(&(coordinate(&1)))
+        |> Enum.join("|")
+      end)
+
+    distance(origins, destinations, options)
   end
+
 
   @doc """
   Queries locations on the earth for elevation data.
