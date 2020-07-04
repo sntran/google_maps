@@ -23,8 +23,8 @@ defmodule DistanceTest do
     assert "OK" == status
     assert is_binary(distance_text)
     assert is_integer(distance_value)
-    assert is_binary(distance_text)
-    assert is_integer(distance_value)
+    assert is_binary(duration_text)
+    assert is_integer(duration_value)
   end
 
   test "distance between lat/lng tupples" do
@@ -48,8 +48,8 @@ defmodule DistanceTest do
     assert "OK" == status
     assert is_binary(distance_text)
     assert is_integer(distance_value)
-    assert is_binary(distance_text)
-    assert is_integer(distance_value)
+    assert is_binary(duration_text)
+    assert is_integer(duration_value)
   end
 
   test "distance between one origin and two destinations using lat/lng tupples" do
@@ -74,8 +74,8 @@ defmodule DistanceTest do
     assert "OK" == first_status
     assert is_binary(first_distance_text)
     assert is_integer(first_distance_value)
-    assert is_binary(first_distance_text)
-    assert is_integer(first_distance_value)
+    assert is_binary(first_duration_text)
+    assert is_integer(first_duration_value)
 
     %{
       "distance" => %{"text" => second_distance_text, "value" => second_distance_value},
@@ -85,8 +85,8 @@ defmodule DistanceTest do
     assert "OK" == second_status
     assert is_binary(second_distance_text)
     assert is_integer(second_distance_value)
-    assert is_binary(second_distance_text)
-    assert is_integer(second_distance_value)
+    assert is_binary(second_duration_text)
+    assert is_integer(second_duration_value)
   end
 
   test "distance between two origins and one destination using lat/lng tupples" do

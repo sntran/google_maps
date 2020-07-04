@@ -39,10 +39,11 @@ defmodule DirectionsTest do
                     )
 
     [route | _rest] = result["routes"]
-    assert route["copyrights"] =~ ~r(Dữ liệu bản đồ ©[\d]{4})
     legs = route["legs"]
     assert Enum.count(legs) > 1
-    assert String.contains?(Enum.at(legs, 1)["distance"]["text"], " km")
+    leg = Enum.at(route["legs"], 1)
+    assert Regex.match?(~r([\d]+ phút), leg["duration"]["text"])
+    assert Regex.match?(~r([\d]+ km), leg["distance"]["text"])
   end
 
   defp assert_single_route(%{"routes" => [route]}) do

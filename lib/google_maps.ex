@@ -1743,7 +1743,7 @@ defmodule GoogleMaps do
       ...>   headers: [{"Accept-Language", "vi"}]
       ...> ])
       iex> [route] = result["routes"]
-      iex> Regex.match?(~r(Dữ liệu bản đồ ©[\\d]{4}), route["copyrights"])
+      iex> Regex.match?(~r([\\d]+ phút), Enum.at(route["legs"], 0)["duration"]["text"])
       true
 
       iex> {:error, error} = GoogleMaps.get("directions", [
