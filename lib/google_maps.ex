@@ -1267,8 +1267,6 @@ defmodule GoogleMaps do
     place_nearby("#{latitude},#{longitude}", radius, options)
   end
 
-
-
   @doc """
     Search for places based on text input.
 
