@@ -1268,6 +1268,102 @@ defmodule GoogleMaps do
   end
 
   @doc """
+    Search for places based on text input.
+
+    A Find Place request takes a text input and returns a place.
+    The input can be any kind of Places text data, such as a name,
+    address, or phone number. The request must be a string. A Find
+    Place request using non-string data such as a lat/lng coordinate
+    or plus code generates an error.
+
+
+  ## Args:
+  * `input` — Text input that identifies the search target, such as a
+    name, address, or phone number. The input must be a string. Non-string
+    input such as a lat/lng coordinate or plus code generates an error.
+
+  * `input_type` — The type of input. This can be one of either textquery
+    or phonenumber. Phone numbers must be in international format (prefixed
+    by a plus sign ("+"), followed by the country code, then the phone
+    number itself). See E.164 ITU recommendation for more information.
+
+
+  ## Options:
+
+  * `language` — The language code, indicating in which language the
+    results should be returned, if possible. Searches are also biased
+    to the selected language; results in the selected language may be
+    given a higher ranking. See the [list of supported languages](https://developers.google.com/maps/faq#languagesupport)
+    and their codes. Note that we often update supported languages so
+    this list may not be exhaustive.
+
+  * `fields` - The fields specifying the types of place data to return,
+    separated by a comma.
+
+  * `locationbias` - Prefer results in a specified area, by specifying
+    either a radius plus lat/lng, or two lat/lng pairs representing the
+    points of a rectangle. If this parameter is not specified, the API
+    uses IP address biasing by default.
+
+    * `ipbias` - (default). Instructs the API to use IP address biasing.
+
+    * `point` - A single lat/lng coordinate. Use the following format:
+      `point:lat,lng`
+
+    * `circle` - A string specifying radius in meters, plus lat/lng
+      in decimal degrees. Use the following format: `circle:radius@lat,lng`
+
+    * `rectangle` - A string specifying two lat/lng pairs in decimal degrees,
+      representing the south/west and north/east points of a rectangle. Use
+      the following format: `rectangle:south,west|north,east`.
+      Note that east/west values are wrapped to the range -180, 180, and
+      north/south values are clamped to the range -90, 90.
+
+  ## Returns
+
+    This function returns `{:ok, body}` if the request is successful, and
+    Google returns data. The returned body is a map that contains two root
+    elements:
+
+    * `status` contains metadata on the request.
+
+    * `candidates` contains an array of `place_id`, unless additional fields are requested.
+
+  ## Examples
+
+      # Search with an invalid API key
+      iex> {:error, status, error_message} = GoogleMaps.place_find_from_text("1600 penn ave", "textquery", key: "invalid key")
+      iex> status
+      "REQUEST_DENIED"
+      iex> error_message
+      "The provided API key is invalid."
+
+      # Search for the White House by coloquial address
+      iex> {:ok, response} = GoogleMaps.place_find_from_text("1600 penn ave", "textquery")
+      iex> is_list(response["candidates"])
+      true
+
+      # Search for the White House with additional fields business_status, formatted_address, and name
+      iex> {:ok, response} = GoogleMaps.place_find_from_text("1600 penn ave", "textquery", fields: "business_status,formatted_address,name")
+      {:ok,
+        %{
+          "candidates" => [
+            %{
+              "business_status" => "OPERATIONAL",
+              "formatted_address" => "1600 Pennsylvania Ave. SE, Washington, DC 20003, United States",
+              "name" => "1600 Pennsylvania Ave SE Apartments"
+            }
+          ],
+          "status" => "OK"
+        }}
+  """
+  @spec place_find_from_text(String.t(), String.t(), options()) :: Response.t()
+  def place_find_from_text(input, input_type, options \\ []) do
+    params = Keyword.merge(options, [input: input, inputtype: input_type])
+    GoogleMaps.get("place/findplacefromtext", params)
+  end
+
+  @doc """
     A Place Details request returns more comprehensive information about the indicated place
     such as its complete address, phone number, user rating and reviews.
 
