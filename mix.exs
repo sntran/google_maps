@@ -1,23 +1,24 @@
 defmodule GoogleMaps.Mixfile do
   use Mix.Project
 
-  @version File.read!("VERSION") |> String.trim
+  @version File.read!("VERSION") |> String.trim()
 
   def project do
-    [app: :google_maps,
-     description: "A Google Maps API in Elixir",
-     version: @version,
-     elixir: "~> 1.3",
-     build_embedded: Mix.env == :prod,
-     start_permanent: Mix.env == :prod,
-     deps: deps(),
-     package: package(),
+    [
+      app: :google_maps,
+      description: "A Google Maps API in Elixir",
+      version: @version,
+      elixir: "~> 1.3",
+      build_embedded: Mix.env() == :prod,
+      start_permanent: Mix.env() == :prod,
+      deps: deps(),
+      package: package(),
 
-     # Docs
-     name: "GoogleMaps",
-     source_url: "https://github.com/sntran/ex_maps",
-     homepage_url: "https://hex.pm/packages/google_maps/",
-     docs: docs()
+      # Docs
+      name: "GoogleMaps",
+      source_url: "https://github.com/sntran/ex_maps",
+      homepage_url: "https://hex.pm/packages/google_maps/",
+      docs: docs()
     ]
   end
 
@@ -42,22 +43,25 @@ defmodule GoogleMaps.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:httpoison, "~> 1.6"},
+      {:httpoison, "~> 1.7"},
       {:jason, "~> 1.1"},
       {:ex_doc, ">= 0.0.0", only: :dev}
     ]
   end
 
   defp package do
-    [files: ~w(lib mix.exs README.md LICENSE.md VERSION),
-     maintainers: ["Son Tran-Nguyen"],
-     licenses: ["MIT"],
-     links: %{"GitHub" => "https://github.com/sntran/ex_maps"}]
+    [
+      files: ~w(lib mix.exs README.md LICENSE.md VERSION),
+      maintainers: ["Son Tran-Nguyen"],
+      licenses: ["MIT"],
+      links: %{"GitHub" => "https://github.com/sntran/ex_maps"}
+    ]
   end
 
   defp docs do
     [
-      main: "GoogleMaps", # The main page in the docs
+      # The main page in the docs
+      main: "GoogleMaps",
       extras: ["README.md"]
     ]
   end
