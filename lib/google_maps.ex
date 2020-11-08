@@ -328,26 +328,12 @@ defmodule GoogleMaps do
     GoogleMaps.get("distancematrix", params)
   end
 
-  @spec distance([address()], [address()], options()) :: Response.t()
-  def distance([origin | _] = origins, [destination | _] = destinations, options)
-      when is_binary(origin) and is_binary(destination) do
-    [origins, destinations] =
-      [origins, destinations]
-      |> Enum.map(fn address ->
-        [address]
-        |> List.flatten()
-        |> Enum.join("|")
-      end)
-
-    distance(origins, destinations, options)
-  end
-
-  @spec distance([coordinate()], [coordinate()], options()) :: Response.t()
+  @spec distance([coordinate() | address()], [coordinate() | address()], options()) :: Response.t()
   def distance(origins, destinations, options) do
     [origins, destinations] =
       [origins, destinations]
-      |> Enum.map(fn coordinates ->
-        [coordinates]
+      |> Enum.map(fn locations ->
+        [locations]
         |> List.flatten()
         |> Enum.map(&coordinate(&1))
         |> Enum.join("|")
