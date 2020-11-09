@@ -16,18 +16,18 @@ defmodule GoogleMaps do
   An address that will be geocoded and converted to latitude/longitude
   coordinate.
   """
-  @type address :: String.t
+  @type address :: String.t()
 
   @type latitude :: number
   @type longitude :: number
   @typedoc """
   A latitude/longitude pair in tuple or comma-separated string format.
   """
-  @type coordinate :: {latitude(), longitude()} | String.t
+  @type coordinate :: {latitude(), longitude()} | String.t()
   @typedoc """
   A tagged tuple with an ID of a known place.
   """
-  @type place_id :: {:place_id, String.t}
+  @type place_id :: {:place_id, String.t()}
   @typedoc """
   A specific point, which can be an address, a latitude/longitude coord
   or a place id tupple.
@@ -36,7 +36,7 @@ defmodule GoogleMaps do
 
   @type options :: keyword()
 
-  @type mode :: String.t
+  @type mode :: String.t()
 
   @doc """
   Retrives the directions from one point to the other.
@@ -228,8 +228,9 @@ defmodule GoogleMaps do
   """
   @spec directions(waypoint(), waypoint(), options()) :: Response.t()
   def directions(origin, destination, options \\ []) do
-    params = options
-    |> Keyword.merge([origin: origin, destination: destination])
+    params =
+      options
+      |> Keyword.merge(origin: origin, destination: destination)
 
     GoogleMaps.get("directions", params)
   end
@@ -320,26 +321,26 @@ defmodule GoogleMaps do
 
   @spec distance(address(), address(), options()) :: Response.t()
   def distance(origin, destination, options) when is_binary(origin) and is_binary(destination) do
-    params = options
-    |> Keyword.merge([origins: origin, destinations: destination])
+    params =
+      options
+      |> Keyword.merge(origins: origin, destinations: destination)
 
     GoogleMaps.get("distancematrix", params)
   end
 
-  @spec distance([coordinate()], [coordinate()], options()) :: Response.t()
+  @spec distance([coordinate() | address()], [coordinate() | address()], options()) :: Response.t()
   def distance(origins, destinations, options) do
-    [origins, destinations]  =
+    [origins, destinations] =
       [origins, destinations]
-      |> Enum.map(fn coordinates ->
-        [coordinates]
-        |> List.flatten
-        |> Enum.map(&(coordinate(&1)))
+      |> Enum.map(fn locations ->
+        [locations]
+        |> List.flatten()
+        |> Enum.map(&coordinate(&1))
         |> Enum.join("|")
       end)
 
     distance(origins, destinations, options)
   end
-
 
   @doc """
   Queries locations on the earth for elevation data.
@@ -453,16 +454,18 @@ defmodule GoogleMaps do
   def elevation(coordinates, options \\ [])
 
   def elevation(coordinates, options) when is_list(coordinates) do
-    coordinates = coordinates
-    |> Enum.map(&(coordinate(&1)))
-    |> Enum.join("|")
+    coordinates =
+      coordinates
+      |> Enum.map(&coordinate(&1))
+      |> Enum.join("|")
 
-    params = case options[:samples] do
-      # Use positional request.
-      nil -> [locations: coordinates]
-      # When `samples` param is set, use sampled path request.
-      samples -> [path: coordinates, samples: samples]
-    end
+    params =
+      case options[:samples] do
+        # Use positional request.
+        nil -> [locations: coordinates]
+        # When `samples` param is set, use sampled path request.
+        samples -> [path: coordinates, samples: samples]
+      end
 
     params = Keyword.merge(options, params)
     GoogleMaps.get("elevation", params)
@@ -698,33 +701,34 @@ defmodule GoogleMaps do
       ...> }, result)
       true
   """
-  @spec geocode(map() | String.t | coordinate() | place_id, options()) :: Response.t()
+  @spec geocode(map() | String.t() | coordinate() | place_id, options()) :: Response.t()
   def geocode(input, options \\ [])
 
   # Reverse geo-coding
   def geocode({lat, lng}, options) when is_number(lat) and is_number(lng) do
-    params = Keyword.merge(options, [latlng: "#{lat},#{lng}"])
+    params = Keyword.merge(options, latlng: "#{lat},#{lng}")
     GoogleMaps.get("geocode", params)
   end
 
   def geocode({:place_id, place_id}, options) do
-    params = Keyword.merge(options, [place_id: place_id])
+    params = Keyword.merge(options, place_id: place_id)
     GoogleMaps.get("geocode", params)
   end
 
   def geocode("place_id:" <> place_id, options) do
-    params = Keyword.merge(options, [place_id: place_id])
+    params = Keyword.merge(options, place_id: place_id)
     GoogleMaps.get("geocode", params)
   end
+
   # Geocode using components.
   def geocode(components, options) when is_map(components) do
-    components = Enum.map_join(components, "|", fn({k, v}) -> "#{k}:#{v}" end)
-    params = Keyword.merge(options, [components: components])
+    components = Enum.map_join(components, "|", fn {k, v} -> "#{k}:#{v}" end)
+    params = Keyword.merge(options, components: components)
     GoogleMaps.get("geocode", params)
   end
 
   def geocode(address, options) when is_binary(address) do
-    params = Keyword.merge(options, [address: address])
+    params = Keyword.merge(options, address: address)
     GoogleMaps.get("geocode", params)
   end
 
@@ -953,10 +957,11 @@ defmodule GoogleMaps do
       iex> Enum.count(result["predictions"]) > 1
       true
   """
-  @spec place_autocomplete(String.t, options()) :: Response.t()
+  @spec place_autocomplete(String.t(), options()) :: Response.t()
   def place_autocomplete(input, options \\ []) do
-    params = options
-    |> Keyword.merge([input: input])
+    params =
+      options
+      |> Keyword.merge(input: input)
 
     GoogleMaps.get("place/autocomplete", params)
   end
@@ -1052,10 +1057,11 @@ defmodule GoogleMaps do
       iex> is_list(result["predictions"])
       true
   """
-  @spec place_query(String.t, options()) :: Response.t()
+  @spec place_query(String.t(), options()) :: Response.t()
   def place_query(input, options \\ []) do
-    params = options
-    |> Keyword.merge([input: input])
+    params =
+      options
+      |> Keyword.merge(input: input)
 
     GoogleMaps.get("place/queryautocomplete", params)
   end
@@ -1255,15 +1261,17 @@ defmodule GoogleMaps do
 
   def place_nearby(location, radius, options) when is_binary(location) do
     params =
-    if options[:rankby] == "distance" do
-      Keyword.merge(options, [location: location])
-    else
-      Keyword.merge(options, [location: location, radius: radius])
-    end
+      if options[:rankby] == "distance" do
+        Keyword.merge(options, location: location)
+      else
+        Keyword.merge(options, location: location, radius: radius)
+      end
+
     GoogleMaps.get("place/nearbysearch", params)
   end
 
-  def place_nearby({latitude, longitude}, radius, options) when is_number(latitude) and is_number(longitude) do
+  def place_nearby({latitude, longitude}, radius, options)
+      when is_number(latitude) and is_number(longitude) do
     place_nearby("#{latitude},#{longitude}", radius, options)
   end
 
@@ -1359,7 +1367,7 @@ defmodule GoogleMaps do
   """
   @spec place_find_from_text(String.t(), String.t(), options()) :: Response.t()
   def place_find_from_text(input, input_type, options \\ []) do
-    params = Keyword.merge(options, [input: input, inputtype: input_type])
+    params = Keyword.merge(options, input: input, inputtype: input_type)
     GoogleMaps.get("place/findplacefromtext", params)
   end
 
@@ -1616,8 +1624,9 @@ defmodule GoogleMaps do
 
   def place_details({:place_id, place_id}, options) do
     params =
-    options
-    |> Keyword.merge([place_id: place_id])
+      options
+      |> Keyword.merge(place_id: place_id)
+
     GoogleMaps.get("place/details", params)
   end
 
@@ -1689,11 +1698,11 @@ defmodule GoogleMaps do
       iex> is_binary(response)
       true
   """
-  @spec place_photo(String.t) :: Response.t()
-  @spec place_photo(String.t, integer() | nil) :: Response.t()
-  @spec place_photo(String.t, integer() | nil, options()) :: Response.t()
-  @spec place_photo(String.t, integer() | nil, integer() | nil) :: Response.t()
-  @spec place_photo(String.t, integer() | nil, integer() | nil, options()) :: Response.t()
+  @spec place_photo(String.t()) :: Response.t()
+  @spec place_photo(String.t(), integer() | nil) :: Response.t()
+  @spec place_photo(String.t(), integer() | nil, options()) :: Response.t()
+  @spec place_photo(String.t(), integer() | nil, integer() | nil) :: Response.t()
+  @spec place_photo(String.t(), integer() | nil, integer() | nil, options()) :: Response.t()
   def place_photo(photo_reference, max_width \\ nil) do
     place_photo(photo_reference, max_width, nil, [])
   end
@@ -1707,16 +1716,20 @@ defmodule GoogleMaps do
   end
 
   def place_photo(photo_reference, max_width, max_height, opts)
-  when is_binary(photo_reference)
-  and is_nil(max_width) or (is_integer(max_width) and max_width >= 1 and max_width <= 1600)
-  and is_nil(max_height) or (is_integer(max_height) and max_height >=1 and max_height <= 1600)
-  and is_list(opts)
-  do
-    params = Keyword.merge(opts, [photoreference: photo_reference,
-                                  maxwidth: max_width || 1600,
-                                  maxheight: max_height || 1600,
-                                  output: "",
-                                  options: [follow_redirect: true]])
+      when (is_binary(photo_reference) and
+              is_nil(max_width)) or
+             (is_integer(max_width) and max_width >= 1 and max_width <= 1600 and
+                is_nil(max_height)) or
+             (is_integer(max_height) and max_height >= 1 and max_height <= 1600 and
+                is_list(opts)) do
+    params =
+      Keyword.merge(opts,
+        photoreference: photo_reference,
+        maxwidth: max_width || 1600,
+        maxheight: max_height || 1600,
+        output: "",
+        options: [follow_redirect: true]
+      )
 
     GoogleMaps.get("place/photo", params)
   end
@@ -1778,10 +1791,12 @@ defmodule GoogleMaps do
   """
   @spec timezone(coordinate(), options()) :: Response.t()
   def timezone(location, options \\ []) do
-    params = Keyword.merge(options, [
-      location: coordinate(location),
-      timestamp: :os.system_time(:seconds)
-    ])
+    params =
+      Keyword.merge(options,
+        location: coordinate(location),
+        timestamp: :os.system_time(:seconds)
+      )
+
     GoogleMaps.get("timezone", params)
   end
 
@@ -1861,10 +1876,10 @@ defmodule GoogleMaps do
       true
 
   """
-  @spec get(String.t, options()) :: Response.t()
+  @spec get(String.t(), options()) :: Response.t()
   def get(endpoint, params) do
     Request.get(endpoint, params)
-    |> Response.wrap
+    |> Response.wrap()
   end
 
   @spec coordinate(coordinate()) :: binary()
