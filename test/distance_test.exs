@@ -27,7 +27,7 @@ defmodule DistanceTest do
     assert is_integer(duration_value)
   end
 
-  test "distance between lat/lng tupples" do
+  test "distance between lat/lng tuples" do
     origin = {8.6069305, 104.7196242}
     destination = {23.363697, 105.3140251}
 
@@ -52,7 +52,7 @@ defmodule DistanceTest do
     assert is_integer(duration_value)
   end
 
-  test "distance between one origin and two destinations using lat/lng tupples" do
+  test "distance between one origin and two destinations using lat/lng tuples" do
     origin = {8.6069305, 104.7196242}
     destinations = [{23.363697, 105.3140251}, {22.593417, 104.617724}]
 
@@ -91,7 +91,7 @@ defmodule DistanceTest do
     assert is_integer(second_duration_value)
   end
 
-  test "distance between two origins and one destination using lat/lng tupples" do
+  test "distance between two origins and one destination using lat/lng tuples" do
     destination = {8.6069305, 104.7196242}
     origins = [{23.363697, 105.3140251}, {22.593417, 104.617724}]
 

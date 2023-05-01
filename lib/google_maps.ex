@@ -30,7 +30,7 @@ defmodule GoogleMaps do
   @type place_id :: {:place_id, String.t()}
   @typedoc """
   A specific point, which can be an address, a latitude/longitude coord
-  or a place id tupple.
+  or a place id tuple.
   """
   @type waypoint :: address() | coordinate() | place_id()
 
@@ -39,7 +39,7 @@ defmodule GoogleMaps do
   @type mode :: String.t()
 
   @doc """
-  Retrives the directions from one point to the other.
+  Retrieves the directions from one point to the other.
 
   Args:
     * `origin` — The address, textual latitude/longitude value, or
