@@ -1403,9 +1403,13 @@ defmodule GoogleMaps do
     * `region` — The region code, specified as a [ccTLD](https://en.wikipedia.org/wiki/CcTLD) (country code top-level domain)
       two-character value. Most ccTLD codes are identical to ISO 3166-1 codes,
       with some exceptions. This parameter will only influence, not fully restrict,
-      results. If more relevant results exist outside of the specified region,
+      results. If more relevant results exist outside the specified region,
       they may be included. When this parameter is used, the country name is
       omitted from the resulting `formatted_address` for results in the specified region.
+
+    * `fields` — A comma separated list of the fields to request - Google's pricing varies depending
+      on which fields you request. See the list of available fields at https://developers.google.com/maps/documentation/places/web-service/details#fields.
+      You can just pass `fields: "place_id"` to refresh a `NOT_FOUND` `place_id`, as per https://developers.google.com/maps/documentation/places/web-service/place-id#refresh-id.
 
   ## Returns
 
