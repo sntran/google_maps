@@ -17,7 +17,7 @@ defmodule DirectionsTest do
     assert_single_route(result)
   end
 
-  test "directions between two lat/lng tupples" do
+  test "directions between two lat/lng tuples" do
     {:ok, result} = Maps.directions({8.6069305,104.7196242}, {23.363697,105.3140251})
     assert result["geocoded_waypoints"]
     assert_single_route(result)

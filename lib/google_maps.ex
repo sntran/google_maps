@@ -30,7 +30,7 @@ defmodule GoogleMaps do
   @type place_id :: {:place_id, String.t()}
   @typedoc """
   A specific point, which can be an address, a latitude/longitude coord
-  or a place id tupple.
+  or a place id tuple.
   """
   @type waypoint :: address() | coordinate() | place_id()
 
@@ -39,7 +39,7 @@ defmodule GoogleMaps do
   @type mode :: String.t()
 
   @doc """
-  Retrives the directions from one point to the other.
+  Retrieves the directions from one point to the other.
 
   Args:
     * `origin` — The address, textual latitude/longitude value, or
@@ -1124,7 +1124,7 @@ defmodule GoogleMaps do
   * `type` - Restricts the results to places matching the specified type.
     Only one type may be specified (if more than one type is provided,
     all types following the first entry are ignored).
-    See the [list of supported types](https://developers.google.com/places/web-service/supported_types).
+    See the [list of supported types](https://developers.google.com/maps/documentation/places/web-service/supported_types).
 
   * `rankby` - Specifies the order in which results are listed.
     Note that rankby must not be included if radius(described under Required parameters above) is specified.
@@ -1175,7 +1175,7 @@ defmodule GoogleMaps do
     * `photos[]` - an array of photo objects, each containing a reference to an image.
       A Place Search will return at most one photo object. Performing a Place Details request on the place
       may return up to ten photos. More information about Place Photos and how you can use the images in your
-      application can be found in the [Place Photos](https://developers.google.com/places/web-service/photos) documentation.
+      application can be found in the [Place Photos](https://developers.google.com/maps/documentation/places/web-service/photos) documentation.
       A photo object is described as:
 
       * `photo_reference` — a string used to identify the photo when you perform a Photo request.
@@ -1188,7 +1188,7 @@ defmodule GoogleMaps do
 
     * `place_id` - a textual identifier that uniquely identifies a place. To retrieve information about the place,
       pass this identifier in the placeId field of a Places API request. For more information about place IDs,
-      see the [place ID overview](https://developers.google.com/places/web-service/place-id).
+      see the [place ID overview](https://developers.google.com/maps/documentation/places/web-service/place-id).
 
     * `scope` - Indicates the scope of the `place_id`. The possible values are:
 
@@ -1224,7 +1224,7 @@ defmodule GoogleMaps do
     * `rating` contains the place's rating, from 1.0 to 5.0, based on aggregated user reviews
 
     * `types` contains an array of feature types describing the given result.
-      See the [list of supported types](https://developers.google.com/places/web-service/supported_types#table2).
+      See the [list of supported types](https://developers.google.com/maps/documentation/places/web-service/supported_types#table2).
 
     * `vicinity` contains a feature name of a nearby location. Often this feature refers to a street or
       neighborhood within the given results.
@@ -1379,7 +1379,7 @@ defmodule GoogleMaps do
 
     * `place_id` — A textual identifier that uniquely identifies a place,
       returned from a [Place Search](https://developers.google.com/places/web-service/search).
-      For more information about place IDs, see the [place ID overview](https://developers.google.com/places/web-service/place-id).
+      For more information about place IDs, see the [place ID overview](https://developers.google.com/maps/documentation/places/web-service/place-id).
 
       Can be in the following formats:
 
@@ -1403,9 +1403,13 @@ defmodule GoogleMaps do
     * `region` — The region code, specified as a [ccTLD](https://en.wikipedia.org/wiki/CcTLD) (country code top-level domain)
       two-character value. Most ccTLD codes are identical to ISO 3166-1 codes,
       with some exceptions. This parameter will only influence, not fully restrict,
-      results. If more relevant results exist outside of the specified region,
+      results. If more relevant results exist outside the specified region,
       they may be included. When this parameter is used, the country name is
       omitted from the resulting `formatted_address` for results in the specified region.
+
+    * `fields` — A comma separated list of the fields to request - Google's pricing varies depending
+      on which fields you request. See the list of available fields at https://developers.google.com/maps/documentation/places/web-service/details#fields.
+      You can just pass `fields: "place_id"` to refresh a `NOT_FOUND` `place_id`, as per https://developers.google.com/maps/documentation/places/web-service/place-id#refresh-id.
 
   ## Returns
 
@@ -1458,10 +1462,10 @@ defmodule GoogleMaps do
       Do not parse the formatted address programmatically. Instead you should use the individual address components,
       which the API response includes in addition to the formatted address field
 
-    * `formatted_phone_number` contains the place's phone number in its [local format](http://en.wikipedia.org/wiki/Local_conventions_for_writing_telephone_numbers).
+    * `formatted_phone_number` contains the place's phone number in its [local format](https://en.wikipedia.org/wiki/National_conventions_for_writing_telephone_numbers).
       For example, the `formatted_phone_number` for Google's Sydney, Australia office is `(02) 9374 4000`.
 
-    * `adr_address` is a representation of the place's address in the [adr microformat](http://microformats.org/wiki/adr).
+    * `adr_address` is a representation of the place's address in the [adr microformat](https://microformats.org/wiki/adr).
 
     * `geometry` contains the following information:
 
@@ -1507,7 +1511,7 @@ defmodule GoogleMaps do
 
     * `photos[]` — an array of photo objects, each containing a reference to an image.
       A Place Details request may return up to ten photos.
-      More information about place photos and how you can use the images in your application can be found in the [Place Photos documentation](https://developers.google.com/places/web-service/photos).
+      More information about place photos and how you can use the images in your application can be found in the [Place Photos documentation](https://developers.google.com/maps/documentation/places/web-service/photos).
       A photo object is described as:
 
         * `photo_reference` — a string used to identify the photo when you perform a Photo request.
@@ -1519,7 +1523,7 @@ defmodule GoogleMaps do
         * `html_attributions[]` — contains any required attributions. This field will always be present, but may be empty.
 
     * `place_id`: A textual identifier that uniquely identifies a place. To retrieve information about the place, pass this
-    identifier in the placeId field of a Places API request. For more information about place IDs, see the [place ID overview](https://developers.google.com/places/web-service/place-id).
+    identifier in the placeId field of a Places API request. For more information about place IDs, see the [place ID overview](https://developers.google.com/maps/documentation/places/web-service/place-id).
 
     * `scope`: Indicates the scope of the place_id. The possible values are:
 
@@ -1583,7 +1587,7 @@ defmodule GoogleMaps do
 
       * `time` the time that the review was submitted, measured in the number of seconds since since midnight, January 1, 1970 UTC.
 
-    * `types[]` contains an array of feature types describing the given result. See the [list of supported types](https://developers.google.com/places/web-service/supported_types#table2).
+    * `types[]` contains an array of feature types describing the given result. See the [list of supported types](https://developers.google.com/maps/documentation/places/web-service/supported_types#table2).
 
     * `url` contains the URL of the official Google page for this place. This will be the Google-owned page that contains the
       best available information about the place. Applications must link to or embed this page on any screen that shows
